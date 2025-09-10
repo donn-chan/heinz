@@ -132,7 +132,7 @@ export default function Home() {
                   fill="transparent"
                 />
               </defs>
-              <text className="font-thai font-bold fill-black text-[40px]">
+              <text className="font-thai font-bold fill-black text-[40px] curve-text">
                 <textPath href="#curve" startOffset="50%" textAnchor="middle">
                   {text}
                 </textPath>

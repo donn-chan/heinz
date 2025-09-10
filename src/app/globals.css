@@ -50,4 +50,10 @@ body {
   .logo-img {
     display: flex !important;
   }
+  .svgWrapper {
+    left: -20%;
+  }
+  .curve-text {
+    font-size: 32px;
+  }
 }
