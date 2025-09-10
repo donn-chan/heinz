@@ -88,6 +88,7 @@ export default function Home() {
           width={600}
           height={600}
           className="object-contain"
+          unoptimized
         />
         {text && (
           <div className="absolute top-[20%] left-1/2 -translate-x-1/2 text-center w-full px-4 font-thai font-bold text-black text-l sm:text-2xl md:text-2xl lg:text-3xl">
