@@ -59,7 +59,7 @@ export default function Home() {
           src="/images/headline.png"
           alt="Headline"
           width={600}
-          height={300}
+          height={240}
           className="w-full h-auto"
         />
       </div>
@@ -98,7 +98,7 @@ export default function Home() {
 
       {/* Buttons + hashtag */}
       {text && (
-        <div className="flex flex-col items-center">
+        <div className="flex flex-col items-center after-logo">
           <div className="flex flex-row gap-6 flex-wrap justify-center">
             <button
               onClick={downloadImage}
