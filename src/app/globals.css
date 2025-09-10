@@ -42,3 +42,12 @@ body {
 .font-thai {
   font-family: 'NotoSansThai', sans-serif;
 }
+
+@media screen and (max-width: 767px) {
+  main {
+    padding: 10px 0 !important;
+  }
+  .logo-img {
+    display: flex !important;
+  }
+}

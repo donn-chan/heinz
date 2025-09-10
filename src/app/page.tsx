@@ -75,7 +75,7 @@ export default function Home() {
       {/* Logo with live text overlay */}
       <div
         ref={logoRef}
-        className="relative w-full max-w-[600px] h-[520px]"
+        className="relative w-full max-w-[600px] h-[520px] logo-img"
       >
         <Image
           src="/images/logo.png"
