@@ -36,25 +36,9 @@ body {
        url('/fonts/NotoSansThai-Regular.woff') format('woff');
   font-weight: normal;
   font-style: normal;
+  font-display: block;
 }
 
 .font-thai {
   font-family: 'NotoSansThai', sans-serif;
-}
-
-.after-logo {
-  margin-top: -80px !important;
-  z-index: 2;
-}
-
-@media (max-width: 767px) {
-  .after-logo {
-    margin-top: -40px !important;
-  }
-}
-
-@media (min-width: 768px) {
-  .after-logo {
-    margin-top: -80px !important;
-  }
 }
