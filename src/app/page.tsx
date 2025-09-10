@@ -16,10 +16,11 @@ export default function Home() {
     if (logoRef.current) {
       const svgText = logoRef.current.querySelector("text");
       const originalSize = svgText?.getAttribute("font-size");
-  
+      
       // force font size
       svgText?.setAttribute("font-size", "40");
-  
+      await document.fonts.ready;
+      
       const dataUrl = await toPng(logoRef.current, { cacheBust: true });
   
       // restore font size
@@ -28,7 +29,13 @@ export default function Home() {
       const link = document.createElement("a");
       link.download = "heinz.png";
       link.href = dataUrl;
-      link.click();
+      
+      // If download not supported, fallback
+      if (typeof link.download === "undefined") {
+        window.open(dataUrl, "_blank");
+      } else {
+        link.click();
+      }
     }
   };
 
