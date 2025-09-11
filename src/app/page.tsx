@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { useState, useRef } from "react";
+import { useState, useEffect, useRef } from "react";
 import { toPng, toBlob } from "html-to-image";
 import { Download, Share2 } from "lucide-react";
 
@@ -11,42 +11,146 @@ export default function Home() {
   const logoRef = useRef<HTMLDivElement>(null);
 
   // Download image
+  // const downloadImage = async () => {
+  //   if (!logoRef.current) return;
+
+  //   // Grab elements
+  //   const svgText = logoRef.current.querySelector("text");
+  //   const gElement = logoRef.current.querySelector("g");
+  //   const textPath = logoRef.current.querySelector("textPath");
+
+  //   // Save original states
+  //   const originalSize = svgText?.getAttribute("font-size");
+  //   const originalTransform = gElement?.getAttribute("transform");
+
+  //   // Device detection
+  //   const isIOS = /iPhone|iPad|iPod/.test(navigator.userAgent);
+  //   const isMobile = isIOS || /Android/i.test(navigator.userAgent);
+
+  //   setIsDownloading(true);
+
+  //   try {
+  //     // Ensure fonts are loaded
+  //     await document.fonts.ready;
+
+  //     // Apply temporary adjustments for small screens
+  //     if (window.innerWidth < 400 && gElement) {
+  //       gElement.setAttribute("transform", "translate(-20,0)");
+  //       textPath?.setAttribute("startOffset", "50%");
+  //     }
+
+  //     if (svgText) {
+  //       svgText.setAttribute("font-size", isMobile ? "28" : "36");
+  //     }
+
+  //     // Generate blob
+  //     const blob = await toBlob(logoRef.current, { cacheBust: true });
+  //     if (!blob) return;
+
+  //     const url = URL.createObjectURL(blob);
+
+  //     if (isIOS) {
+  //       // iOS Safari → open new tab (download not supported)
+  //       setTimeout(() => {
+  //         window.open(url, "_blank");
+  //         URL.revokeObjectURL(url); // cleanup
+  //       }, 200);
+  //     } else {
+  //       // Desktop + Android → trigger download
+  //       const link = document.createElement("a");
+  //       link.href = url;
+  //       link.download = "heinz.png";
+  //       link.click();
+  //       URL.revokeObjectURL(url); // cleanup
+  //     }
+  //   } catch (err) {
+  //     console.error("Download failed:", err);
+  //   } finally {
+  //     // Restore original font size
+  //     if (svgText && originalSize) {
+  //       svgText.setAttribute("font-size", originalSize);
+  //     }
+
+  //     // Restore original transform
+  //     if (gElement) {
+  //       if (originalTransform) {
+  //         gElement.setAttribute("transform", originalTransform);
+  //       } else {
+  //         gElement.removeAttribute("transform");
+  //       }
+  //     }
+
+  //     setIsDownloading(false);
+  //   }
+  // };
+
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const checkScreen = () => setIsMobile(window.innerWidth < 640); // Tailwind "sm"
+    checkScreen();
+    window.addEventListener("resize", checkScreen);
+    return () => window.removeEventListener("resize", checkScreen);
+  }, []);
+
+  const d = isMobile
+    ? "M 60,280 A 210,210 0 0,1 500,280"  // mobile curve
+    : "M 100,250 A 200,200 0 0,1 500,250"; // desktop/tablet curve
+
+
   const downloadImage = async () => {
     if (!logoRef.current) return;
   
     const svgText = logoRef.current.querySelector("text");
+    const gElement = logoRef.current.querySelector("g");
+    const textPath = logoRef.current.querySelector("textPath");
+  
     const originalSize = svgText?.getAttribute("font-size");
   
-    // Simple mobile detection
-    const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
-    
+    const isIOS = /iPhone|iPad|iPod/.test(navigator.userAgent);
+    const isMobile = isIOS || /Android/i.test(navigator.userAgent);
+  
     setIsDownloading(true);
-
+  
     try {
       await document.fonts.ready;
   
-      // 👇 Adjust font size depending on device
-      svgText?.setAttribute("font-size", isMobile ? "28" : "36");
+      if (window.innerWidth < 400 && gElement) {
+        gElement.setAttribute("transform", "translate(-20,0)");
+      }
+  
+      if (svgText) {
+        svgText.setAttribute("font-size", isMobile ? "28" : "36");
+      }
+  
+      if (textPath) {
+        // ✅ Nudge text left just for export
+        textPath.setAttribute("dx", "-10");
+      }
   
       const blob = await toBlob(logoRef.current, { cacheBust: true });
       if (!blob) return;
   
       const url = URL.createObjectURL(blob);
   
-      if (/iPhone|iPad|iPod/.test(navigator.userAgent)) {
+      if (isIOS) {
         setTimeout(() => {
           window.open(url, "_blank");
-        }, 500); // tiny delay makes Safari behave
+          URL.revokeObjectURL(url);
+        }, 200);
       } else {
         const link = document.createElement("a");
         link.href = url;
         link.download = "heinz.png";
         link.click();
+        URL.revokeObjectURL(url);
       }
     } catch (err) {
       console.error("Download failed:", err);
     } finally {
-      if (originalSize) svgText?.setAttribute("font-size", originalSize);
+      if (svgText && originalSize) {
+        svgText.setAttribute("font-size", originalSize);
+      }
       setIsDownloading(false);
     }
   };
@@ -114,7 +218,7 @@ export default function Home() {
             maxLength={12}
             placeholder="พิมพ์ชื่อที่คุณเรียก"
             className="
-              absolute top-[27%] sm:top-[20%] left-1/2 -translate-x-1/2 
+              absolute top-[30%] sm:top-[20%] left-1/2 -translate-x-1/2 
               w-3/4 text-center sm:text-[36px] text-[24px] font-thai font-bold
               text-black caret-black outline-none bg-transparent
             "
@@ -141,28 +245,15 @@ export default function Home() {
                 `}
               </style>
               <defs>
-                {/* Adjust arc to fit Heinz logo curve */}
-                <path
-                  id="curve"
-                  d="M 100,250 A 200,200 0 0,1 500,250"
-                  // d="M 150,180 A 160,160 0 0,1 460,180"
-
-                  fill="transparent"
-                />
+                <path id="curve" d={d} fill="transparent" />
               </defs>
               <g id="mobile-shift">
-                <text className="font-thai font-bold fill-black text-[28px] sm:text-[40px] curve-text">
-                  <textPath href="#curve" startOffset="50%" textAnchor="middle">
-                    {text}
-                  </textPath>
-                </text>
-              </g>
-
-              {/* <text className="font-thai font-bold fill-black text-[28px] sm:text-[40px] curve-text">
+              <text className="font-thai font-bold fill-black" fontSize="36">
                 <textPath href="#curve" startOffset="50%" textAnchor="middle">
                   {text}
                 </textPath>
-              </text> */}
+              </text>
+              </g>
             </svg>
           </div>
         )}
