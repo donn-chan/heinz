@@ -140,7 +140,7 @@ export default function Home() {
             placeholder="พิมพ์ชื่อที่คุณเรียก"
             className="
               absolute top-[27%] sm:top-[20%] left-1/2 -translate-x-1/2 
-              w-3/4 text-center sm:text-[36px] text-[2px] font-thai font-bold
+              w-3/4 text-center sm:text-[36px] text-[24px] font-thai font-bold
               text-black caret-black outline-none bg-transparent
             "
           />
