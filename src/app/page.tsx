@@ -10,84 +10,10 @@ export default function Home() {
   const [isDownloading, setIsDownloading] = useState(false);
   const logoRef = useRef<HTMLDivElement>(null);
 
-  // Download image
-  // const downloadImage = async () => {
-  //   if (!logoRef.current) return;
-
-  //   // Grab elements
-  //   const svgText = logoRef.current.querySelector("text");
-  //   const gElement = logoRef.current.querySelector("g");
-  //   const textPath = logoRef.current.querySelector("textPath");
-
-  //   // Save original states
-  //   const originalSize = svgText?.getAttribute("font-size");
-  //   const originalTransform = gElement?.getAttribute("transform");
-
-  //   // Device detection
-  //   const isIOS = /iPhone|iPad|iPod/.test(navigator.userAgent);
-  //   const isMobile = isIOS || /Android/i.test(navigator.userAgent);
-
-  //   setIsDownloading(true);
-
-  //   try {
-  //     // Ensure fonts are loaded
-  //     await document.fonts.ready;
-
-  //     // Apply temporary adjustments for small screens
-  //     if (window.innerWidth < 400 && gElement) {
-  //       gElement.setAttribute("transform", "translate(-20,0)");
-  //       textPath?.setAttribute("startOffset", "50%");
-  //     }
-
-  //     if (svgText) {
-  //       svgText.setAttribute("font-size", isMobile ? "28" : "36");
-  //     }
-
-  //     // Generate blob
-  //     const blob = await toBlob(logoRef.current, { cacheBust: true });
-  //     if (!blob) return;
-
-  //     const url = URL.createObjectURL(blob);
-
-  //     if (isIOS) {
-  //       // iOS Safari → open new tab (download not supported)
-  //       setTimeout(() => {
-  //         window.open(url, "_blank");
-  //         URL.revokeObjectURL(url); // cleanup
-  //       }, 200);
-  //     } else {
-  //       // Desktop + Android → trigger download
-  //       const link = document.createElement("a");
-  //       link.href = url;
-  //       link.download = "heinz.png";
-  //       link.click();
-  //       URL.revokeObjectURL(url); // cleanup
-  //     }
-  //   } catch (err) {
-  //     console.error("Download failed:", err);
-  //   } finally {
-  //     // Restore original font size
-  //     if (svgText && originalSize) {
-  //       svgText.setAttribute("font-size", originalSize);
-  //     }
-
-  //     // Restore original transform
-  //     if (gElement) {
-  //       if (originalTransform) {
-  //         gElement.setAttribute("transform", originalTransform);
-  //       } else {
-  //         gElement.removeAttribute("transform");
-  //       }
-  //     }
-
-  //     setIsDownloading(false);
-  //   }
-  // };
-
   const [isMobile, setIsMobile] = useState(false);
 
   useEffect(() => {
-    const checkScreen = () => setIsMobile(window.innerWidth < 640); // Tailwind "sm"
+    const checkScreen = () => setIsMobile(window.innerWidth < 400); // Tailwind "sm"
     checkScreen();
     window.addEventListener("resize", checkScreen);
     return () => window.removeEventListener("resize", checkScreen);
@@ -115,18 +41,18 @@ export default function Home() {
     try {
       await document.fonts.ready;
   
-      if (window.innerWidth < 400 && gElement) {
-        gElement.setAttribute("transform", "translate(-20,0)");
-      }
+      // if (window.innerWidth < 400 && gElement) {
+      //   gElement.setAttribute("transform", "translate(-20,0)");
+      // }
   
       if (svgText) {
         svgText.setAttribute("font-size", isMobile ? "28" : "36");
       }
   
-      if (textPath) {
-        // ✅ Nudge text left just for export
-        textPath.setAttribute("dx", "-10");
-      }
+      // if (textPath) {
+      //   // ✅ Nudge text left just for export
+      //   textPath.setAttribute("dx", "-10");
+      // }
   
       const blob = await toBlob(logoRef.current, { cacheBust: true });
       if (!blob) return;
@@ -248,11 +174,11 @@ export default function Home() {
                 <path id="curve" d={d} fill="transparent" />
               </defs>
               <g id="mobile-shift">
-              <text className="font-thai font-bold fill-black" fontSize="36">
-                <textPath href="#curve" startOffset="50%" textAnchor="middle">
-                  {text}
-                </textPath>
-              </text>
+                <text className="font-thai font-bold fill-black" fontSize="36">
+                  <textPath href="#curve" startOffset="50%" textAnchor="middle">
+                    {text}
+                  </textPath>
+                </text>
               </g>
             </svg>
           </div>
