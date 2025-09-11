@@ -121,7 +121,7 @@ export default function Home() {
         ref={logoRef}
         className="relative w-full max-w-[600px] h-[520px] logo-img"
       >
-        <Image
+        {/* <Image
           src="/images/logo.png"
           alt="Heinz Logo"
           // fill
@@ -129,6 +129,12 @@ export default function Home() {
           height={520}
           className="object-cover"
           unoptimized
+        /> */}
+        <img
+          src="/images/logo.png"
+          alt="Heinz Logo"
+          className="w-[600px] h-[520px] object-contain"
+          crossOrigin="anonymous"
         />
         {/* Input field visible until user presses Enter */}
         {!text && (
@@ -142,7 +148,7 @@ export default function Home() {
             maxLength={12}
             placeholder="พิมพ์ชื่อที่คุณเรียก"
             className="
-        absolute top-[20%] left-1/2 -translate-x-1/2 
+        absolute top-[27%] sm:top-[20%] left-1/2 -translate-x-1/2 
         w-3/4 text-center font-thai sm:text-[36px] text-[24px] font-bold
         text-black caret-black outline-none bg-transparent
       "
@@ -151,7 +157,7 @@ export default function Home() {
 
         {/* Curved text shows after input is submitted */}
         {text && (
-          <div className="svgWrapper absolute top-[0%] sm:top-[5%] w-[600px] h-[600px] font-thai">
+          <div className="svgWrapper absolute top-[15%] sm:top-[5%] w-[600px] h-[600px] font-thai">
             <svg
               viewBox="0 0 600 520"
               className="left-0 w-full h-full z-1 font-thai"
@@ -176,7 +182,7 @@ export default function Home() {
                   fill="transparent"
                 />
               </defs>
-              <text className="font-thai font-bold fill-black text-[20px] sm:text-[36px] curve-text">
+              <text className="font-thai font-bold fill-black text-[28px] sm:text-[36px] curve-text">
                 <textPath href="#curve" startOffset="51%" textAnchor="middle">
                   {text}
                 </textPath>
