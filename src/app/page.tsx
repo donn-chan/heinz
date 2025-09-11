@@ -5,10 +5,9 @@ import { useState, useRef } from "react";
 import { toPng, toBlob } from "html-to-image";
 import { Download, Share2 } from "lucide-react";
 
-
-
 export default function Home() {
   const [text, setText] = useState("");
+  const [isDownloading, setIsDownloading] = useState(false);
   const logoRef = useRef<HTMLDivElement>(null);
 
   // Download image
@@ -20,7 +19,9 @@ export default function Home() {
   
     // Simple mobile detection
     const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
-  
+    
+    setIsDownloading(true);
+
     try {
       await document.fonts.ready;
   
@@ -46,6 +47,7 @@ export default function Home() {
       console.error("Download failed:", err);
     } finally {
       if (originalSize) svgText?.setAttribute("font-size", originalSize);
+      setIsDownloading(false);
     }
   };
   
@@ -161,10 +163,11 @@ export default function Home() {
         <div className="flex flex-row gap-6 flex-wrap justify-center">
           <button
             onClick={downloadImage}
+            disabled={isDownloading}
             className="inline-flex items-center justify-center px-6 py-2 rounded-[10px] bg-black/60 text-white font-bold hover:bg-black/80 transition cursor-pointer"
           >
             <Download size={18} className="mr-2" />
-            Download
+            {isDownloading ? "Preparing…" : "Download"}
           </button>
           <button
             onClick={shareImage}
