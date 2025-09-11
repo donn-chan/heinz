@@ -35,7 +35,7 @@ export default function Home() {
       if (/iPhone|iPad|iPod/.test(navigator.userAgent)) {
         setTimeout(() => {
           window.open(url, "_blank");
-        }, 200); // tiny delay makes Safari behave
+        }, 2000); // tiny delay makes Safari behave
       } else {
         const link = document.createElement("a");
         link.href = url;
