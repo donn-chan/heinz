@@ -44,11 +44,13 @@ body {
 }
 
 @media screen and (max-width: 767px) {
-  main {
+  /* main {
     padding: 10px 0 !important;
-  }
+  } */
   .logo-img {
     display: flex !important;
+    width: 100vw;
+    height: auto;
   }
   .svgWrapper {
     left: -20%;

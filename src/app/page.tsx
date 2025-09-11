@@ -40,17 +40,27 @@ export default function Home() {
   // };
 
   const downloadImage = async () => {
-    if (logoRef.current) {
-      const svgText = logoRef.current.querySelector("text");
-      const originalSize = svgText?.getAttribute("font-size");
+    if (!logoRef.current) return;
+  
+    const svgText = logoRef.current.querySelector("text");
+    const originalSize = svgText?.getAttribute("font-size");
+  
+    // Simple mobile detection
+    const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+  
+    try {
       await document.fonts.ready;
-      svgText?.setAttribute("font-size", "40");
+  
+      // 👇 Adjust font size depending on device
+      svgText?.setAttribute("font-size", isMobile ? "28" : "36");
+  
       const blob = await toBlob(logoRef.current, { cacheBust: true });
-      if (originalSize) svgText?.setAttribute("font-size", originalSize);
       if (!blob) return;
-      
+  
       const url = URL.createObjectURL(blob);
-      if (navigator.userAgent.match(/iPhone|iPad|iPod/)) {
+  
+      if (/iPhone|iPad|iPod/.test(navigator.userAgent)) {
+        // iOS Safari → can’t force download
         window.open(url, "_blank");
       } else {
         const link = document.createElement("a");
@@ -58,8 +68,13 @@ export default function Home() {
         link.download = "heinz.png";
         link.click();
       }
+    } catch (err) {
+      console.error("Download failed:", err);
+    } finally {
+      if (originalSize) svgText?.setAttribute("font-size", originalSize);
     }
   };
+  
 
   // Share image
   const shareImage = async () => {
@@ -127,8 +142,8 @@ export default function Home() {
             maxLength={12}
             placeholder="พิมพ์ชื่อที่คุณเรียก"
             className="
-        absolute top-[25%] left-1/2 -translate-x-1/2 
-        w-3/4 text-center font-thai text-[28px] font-bold
+        absolute top-[20%] left-1/2 -translate-x-1/2 
+        w-3/4 text-center font-thai sm:text-[36px] text-[24px] font-bold
         text-black caret-black outline-none bg-transparent
       "
           />
@@ -136,7 +151,7 @@ export default function Home() {
 
         {/* Curved text shows after input is submitted */}
         {text && (
-          <div className="svgWrapper absolute top-[10%] w-[600px] h-[600px] font-thai">
+          <div className="svgWrapper absolute top-[0%] sm:top-[5%] w-[600px] h-[600px] font-thai">
             <svg
               viewBox="0 0 600 520"
               className="left-0 w-full h-full z-1 font-thai"
@@ -161,8 +176,8 @@ export default function Home() {
                   fill="transparent"
                 />
               </defs>
-              <text className="font-thai font-bold fill-black text-[40px] curve-text">
-                <textPath href="#curve" startOffset="50%" textAnchor="middle">
+              <text className="font-thai font-bold fill-black text-[20px] sm:text-[36px] curve-text">
+                <textPath href="#curve" startOffset="51%" textAnchor="middle">
                   {text}
                 </textPath>
               </text>
