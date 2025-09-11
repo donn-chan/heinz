@@ -100,7 +100,6 @@ export default function Home() {
     }
   };
 
-
   return (
     <main
       className="min-h-screen flex flex-col items-center justify-start bg-cover bg-center p-4 sm:p-6"
@@ -122,15 +121,6 @@ export default function Home() {
         ref={logoRef}
         className="relative w-full max-w-[600px] h-[520px] logo-img"
       >
-        {/* <Image
-          src="/images/logo.png"
-          alt="Heinz Logo"
-          // fill
-          width={600}
-          height={520}
-          className="object-cover"
-          unoptimized
-        /> */}
         <img
           src="/images/logo.png"
           alt="Heinz Logo"
@@ -149,32 +139,21 @@ export default function Home() {
             maxLength={12}
             placeholder="พิมพ์ชื่อที่คุณเรียก"
             className="
-        absolute top-[27%] sm:top-[20%] left-1/2 -translate-x-1/2 
-        w-3/4 text-center font-thai sm:text-[36px] text-[24px] font-bold
-        text-black caret-black outline-none bg-transparent
-      "
+              absolute top-[27%] sm:top-[20%] left-1/2 -translate-x-1/2 
+              w-3/4 text-center sm:text-[36px] text-[2px] font-thai font-bold
+              text-black caret-black outline-none bg-transparent
+            "
           />
         )}
 
         {/* Curved text shows after input is submitted */}
         {text && (
-          <div className="svgWrapper absolute top-[15%] sm:top-[5%] w-[600px] h-[600px] font-thai">
+          <div className="svgWrapper absolute top-[15%] sm:top-[5%] w-[600px] h-[600px]">
             <svg
               viewBox="0 0 600 520"
               className="left-0 w-full h-full z-1 font-thai"
               onClick={() => setText("")}
             >
-              <style>
-                {`
-                  @font-face {
-                    font-family: 'NotoSansThai';
-                    src: url('/fonts/NotoSansThai-Regular.woff2') format('woff2');
-                  }
-                  text {
-                    font-family: 'NotoSansThai' !important;
-                  }
-                `}
-              </style>
               <defs>
                 {/* Adjust arc to fit Heinz logo curve */}
                 <path
@@ -184,7 +163,7 @@ export default function Home() {
                 />
               </defs>
               <text className="font-thai font-bold fill-black text-[28px] sm:text-[40px] curve-text">
-                <textPath href="#curve" startOffset="51%" textAnchor="middle">
+                <textPath href="#curve" startOffset="50%" textAnchor="middle">
                   {text}
                 </textPath>
               </text>

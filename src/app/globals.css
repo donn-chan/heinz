@@ -39,14 +39,24 @@ body {
   font-display: block;
 }
 
+@font-face {
+  font-family: 'HeinzSans-Bold';
+  src: url('/fonts/HeinzSans-Bold.ttf') format('ttf');
+  font-weight: bold;
+  font-style: normal;
+  font-display: block;
+}
+
+
 .font-thai {
   font-family: 'NotoSansThai', sans-serif;
 }
 
+.font-thai-bold {
+  font-family: 'HeinzSans-Bold', sans-serif;
+}
+
 @media screen and (max-width: 767px) {
-  /* main {
-    padding: 10px 0 !important;
-  } */
   .logo-img {
     display: flex !important;
     width: 100vw;
@@ -55,7 +65,4 @@ body {
   .svgWrapper {
     left: -20%;
   }
-  /* .curve-text {
-    font-size: 32px;
-  } */
 }
