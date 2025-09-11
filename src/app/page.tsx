@@ -60,8 +60,9 @@ export default function Home() {
       const url = URL.createObjectURL(blob);
   
       if (/iPhone|iPad|iPod/.test(navigator.userAgent)) {
-        // iOS Safari → can’t force download
-        window.open(url, "_blank");
+        setTimeout(() => {
+          window.open(url, "_blank");
+        }, 100); // tiny delay makes Safari behave
       } else {
         const link = document.createElement("a");
         link.href = url;
@@ -182,7 +183,7 @@ export default function Home() {
                   fill="transparent"
                 />
               </defs>
-              <text className="font-thai font-bold fill-black text-[28px] sm:text-[36px] curve-text">
+              <text className="font-thai font-bold fill-black text-[28px] sm:text-[40px] curve-text">
                 <textPath href="#curve" startOffset="51%" textAnchor="middle">
                   {text}
                 </textPath>
