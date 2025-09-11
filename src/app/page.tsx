@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import { useState, useRef } from "react";
-import { toPng } from "html-to-image";
+import { toPng, toBlob } from "html-to-image";
 import { Download, Share2 } from "lucide-react";
 
 
@@ -12,28 +12,50 @@ export default function Home() {
   const logoRef = useRef<HTMLDivElement>(null);
 
   // Download image
+  // const downloadImage = async () => {
+  //   if (logoRef.current) {
+  //     const svgText = logoRef.current.querySelector("text");
+  //     const originalSize = svgText?.getAttribute("font-size");
+      
+  //     // force font size
+  //     svgText?.setAttribute("font-size", "40");
+  //     await document.fonts.ready;
+
+  //     const dataUrl = await toPng(logoRef.current, { cacheBust: true });
+  
+  //     // restore font size
+  //     if (originalSize) svgText?.setAttribute("font-size", originalSize);
+  
+  //     const link = document.createElement("a");
+  //     link.download = "heinz.png";
+  //     link.href = dataUrl;
+      
+  //     // If download not supported, fallback
+  //     if (typeof link.download === "undefined") {
+  //       window.open(dataUrl, "_blank");
+  //     } else {
+  //       link.click();
+  //     }
+  //   }
+  // };
+
   const downloadImage = async () => {
     if (logoRef.current) {
       const svgText = logoRef.current.querySelector("text");
       const originalSize = svgText?.getAttribute("font-size");
-      
-      // force font size
-      svgText?.setAttribute("font-size", "40");
       await document.fonts.ready;
-      
-      const dataUrl = await toPng(logoRef.current, { cacheBust: true });
-  
-      // restore font size
+      svgText?.setAttribute("font-size", "40");
+      const blob = await toBlob(logoRef.current, { cacheBust: true });
       if (originalSize) svgText?.setAttribute("font-size", originalSize);
-  
-      const link = document.createElement("a");
-      link.download = "heinz.png";
-      link.href = dataUrl;
+      if (!blob) return;
       
-      // If download not supported, fallback
-      if (typeof link.download === "undefined") {
-        window.open(dataUrl, "_blank");
+      const url = URL.createObjectURL(blob);
+      if (navigator.userAgent.match(/iPhone|iPad|iPod/)) {
+        window.open(url, "_blank");
       } else {
+        const link = document.createElement("a");
+        link.href = url;
+        link.download = "heinz.png";
         link.click();
       }
     }
