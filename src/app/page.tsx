@@ -123,7 +123,7 @@ export default function Home() {
 
         {/* Curved text shows after input is submitted */}
         {text && (
-          <div className="svgWrapper absolute top-[15%] sm:top-[5%] w-[600px] h-[600px] font-thai">
+          <div className="svgWrapper absolute flex justify-center top-[15%] sm:top-[5%] w-[600px] h-[600px] font-thai">
             <svg
               viewBox="0 0 600 520"
               className="left-0 w-full h-full z-1 font-thai"
@@ -145,14 +145,24 @@ export default function Home() {
                 <path
                   id="curve"
                   d="M 100,250 A 200,200 0 0,1 500,250"
+                  // d="M 150,180 A 160,160 0 0,1 460,180"
+
                   fill="transparent"
                 />
               </defs>
-              <text className="font-thai font-bold fill-black text-[28px] sm:text-[40px] curve-text">
+              <g id="mobile-shift">
+                <text className="font-thai font-bold fill-black text-[28px] sm:text-[40px] curve-text">
+                  <textPath href="#curve" startOffset="50%" textAnchor="middle">
+                    {text}
+                  </textPath>
+                </text>
+              </g>
+
+              {/* <text className="font-thai font-bold fill-black text-[28px] sm:text-[40px] curve-text">
                 <textPath href="#curve" startOffset="50%" textAnchor="middle">
                   {text}
                 </textPath>
-              </text>
+              </text> */}
             </svg>
           </div>
         )}
