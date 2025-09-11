@@ -121,12 +121,23 @@ export default function Home() {
 
         {/* Curved text shows after input is submitted */}
         {text && (
-          <div className="svgWrapper absolute top-[15%] sm:top-[5%] w-[600px] h-[600px]">
+          <div className="svgWrapper absolute top-[15%] sm:top-[5%] w-[600px] h-[600px] font-thai">
             <svg
               viewBox="0 0 600 520"
               className="left-0 w-full h-full z-1 font-thai"
               onClick={() => setText("")}
             >
+              <style>
+                {`
+                  @font-face {
+                    font-family: 'NotoSansThai';
+                    src: url('/fonts/NotoSansThai-Regular.woff2') format('woff2');
+                  }
+                  text {
+                    font-family: 'NotoSansThai' !important;
+                  }
+                `}
+              </style>
               <defs>
                 {/* Adjust arc to fit Heinz logo curve */}
                 <path
