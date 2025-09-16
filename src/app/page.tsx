@@ -145,7 +145,7 @@ export default function Home() {
       left-1/2 -translate-x-[50%] 
       w-[540px] sm:max-w-[680px] lg:max-w-[700px] 
       h-[100vh] z-0"
-        >
+        > 
           <Image
             src="/images/bottle.png"
             alt="bottle"
