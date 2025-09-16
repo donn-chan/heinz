@@ -67,3 +67,8 @@ body {
   }
 }
 
+.heinz-input {
+  max-width: max-content;
+  background: rgba(0, 0, 0, 0.3);
+  border-radius: 20px;
+}

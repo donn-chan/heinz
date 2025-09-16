@@ -20,16 +20,13 @@ export default function Home() {
   }, []);
 
   const d = isMobile
-    ? "M 60,280 A 210,210 0 0,1 500,280"  // mobile curve
-    : "M 100,250 A 200,200 0 0,1 500,250"; // desktop/tablet curve
-
+  ? "M -45,420 A 260,260 0 0,1 600,410" // mobile curve (centered)
+  : "M 115,285 A 250,250 0 0,1 600,270"; // desktop curve (centered)
 
   const downloadImage = async () => {
     if (!logoRef.current) return;
   
     const svgText = logoRef.current.querySelector("text");
-    const gElement = logoRef.current.querySelector("g");
-    const textPath = logoRef.current.querySelector("textPath");
   
     const originalSize = svgText?.getAttribute("font-size");
   
@@ -124,12 +121,12 @@ export default function Home() {
       {/* Logo with live text overlay */}
       <div
         ref={logoRef}
-        className="relative w-full max-w-[600px] h-[520px] logo-img"
+        className="relative w-full max-w-[700px] h-[520px] logo-img"
       >
         <img
           src="/images/logo.png"
           alt="Heinz Logo"
-          className="w-[600px] h-[520px] object-contain"
+          className="w-[700px] h-[520px] object-contain"
           crossOrigin="anonymous"
         />
         {/* Input field visible until user presses Enter */}
@@ -144,18 +141,18 @@ export default function Home() {
             maxLength={12}
             placeholder="พิมพ์ชื่อที่คุณเรียก"
             className="
-              absolute top-[30%] sm:top-[20%] left-1/2 -translate-x-1/2 
-              w-3/4 text-center sm:text-[36px] text-[24px] font-thai font-bold
-              text-black caret-black outline-none bg-transparent
+              absolute top-[25%] sm:top-[17%] left-1/2 -translate-x-1/2 
+              w-[160px] sm:w-[200px] text-center sm:text-[24px] text-[16px] font-thai font-bold
+              text-black caret-black outline-none bg-transparent heinz-input
             "
           />
         )}
 
         {/* Curved text shows after input is submitted */}
         {text && (
-          <div className="svgWrapper absolute flex justify-center top-[15%] sm:top-[5%] w-[600px] h-[600px] font-thai">
+          <div className="svgWrapper absolute flex justify-center top-[10%] sm:top-[5%] w-[700px] h-[520px] font-thai">
             <svg
-              viewBox="0 0 600 520"
+              viewBox="0 0 700 520"
               className="left-0 w-full h-full z-1 font-thai"
               onClick={() => setText("")}
             >
@@ -174,11 +171,17 @@ export default function Home() {
                 <path id="curve" d={d} fill="transparent" />
               </defs>
               <g id="mobile-shift">
-                <text className="font-thai font-bold fill-black" fontSize="36">
-                  <textPath href="#curve" startOffset="50%" textAnchor="middle">
+                <text className="font-thai font-bold fill-black" fontSize={isMobile ? "28" : "36"}>
+                  <textPath
+                    href="#curve"
+                    startOffset="50%"
+                    textAnchor="middle"
+                    // dx={isMobile ? "-12" : "0"}
+                  >
                     {text}
                   </textPath>
                 </text>
+
               </g>
             </svg>
           </div>
@@ -191,25 +194,25 @@ export default function Home() {
           <button
             onClick={downloadImage}
             disabled={isDownloading}
-            className="inline-flex items-center justify-center px-6 py-2 rounded-[10px] bg-black/60 text-white font-bold hover:bg-black/80 transition cursor-pointer"
+            className="inline-flex items-center justify-center px-6 py-2 rounded-[20px] bg-black/60 text-white font-thai hover:bg-black/80 transition cursor-pointer"
           >
             <Download size={18} className="mr-2" />
             {isDownloading ? "Preparing…" : "Download"}
           </button>
           <button
             onClick={shareImage}
-            className="inline-flex items-center justify-center px-6 py-2 rounded-[10px] bg-black/60 text-white font-bold hover:bg-black/80 transition cursor-pointer"
+            className="inline-flex items-center justify-center px-6 py-2 rounded-[20px] bg-black/60 text-white font-thai hover:bg-black/80 transition cursor-pointer"
           >
             <Share2 size={18} className="mr-2" />
             Share
           </button>
         </div>
 
-        <div className="w-full max-w-[400px] mt-4">
+        <div className="w-full max-w-[320px] mt-4">
           <Image
             src="/images/hashtag.png"
             alt="Hashtag"
-            width={800}
+            width={320}
             height={160}
             className="w-full h-auto"
           />
