@@ -143,7 +143,7 @@ export default function Home() {
         <div
           className="absolute top-[-200px] sm:top-[-360px] sm:bottom-[-7%] 
       left-1/2 -translate-x-[50%] 
-      w-[540px] sm:max-w-[680px] lg:max-w-[700px] 
+      w-[540px] sm:w-full sm:max-w-[680px] lg:max-w-[700px] xl:max-w-[700px]
       h-[100vh] z-0"
         > 
           <Image
