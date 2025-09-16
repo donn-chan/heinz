@@ -254,7 +254,14 @@ export default function Home() {
             </button>
           </div>
 
-          <div className={`w-full max-w-[320px] ${isDownloading ? "mt-[-40px]" : "mt-4"}`}>
+          <div 
+          className={`w-full max-w-[320px] ${
+            isDownloading
+              ? isMobile
+                ? "mt-[-40px]" // if downloading + mobile
+                : "mt-4" // if downloading + desktop
+              : "mt-4"         // if not downloading
+          }`}>
             <Image
               src="/images/hashtag.png"
               alt="Hashtag"
