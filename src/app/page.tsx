@@ -62,38 +62,16 @@ export default function Home() {
         svgText.setAttribute("font-weight", "bold");
       }
 
-      const blob = await domtoimage.toBlob(logoRef.current, {
-        cacheBust: true,
-        filter: (node: HTMLElement | SVGElement) => {
-          if (!(node instanceof Element)) return true;
-          if (node.classList.contains("hide-on-export")) return false;
-          // remove borders/outlines/shadows
-          (node as HTMLElement).style.border = "none";
-          (node as HTMLElement).style.outline = "none";
-          (node as HTMLElement).style.boxShadow = "none";
-          const style = window.getComputedStyle(node);
-          return !(
-            style.opacity === "0" ||
-            style.display === "none" ||
-            style.visibility === "hidden"
-          );
-        },
-      });
-
-      if (!blob) {
-        alert("Image export not supported on this device. Please screenshot instead.");
-        setIsDownloading(false);
-        return;
-      }
-
-      const url = URL.createObjectURL(blob);
-
       if (isIOS) {
-        setTimeout(() => {
-          window.open(url, "_blank");
-          URL.revokeObjectURL(url);
-        }, 200);
+        // iOS: use toPng (base64) instead of Blob
+        const dataUrl = await domtoimage.toPng(logoRef.current, { cacheBust: true });
+        const newTab = window.open();
+        newTab?.document.write(`<img src="${dataUrl}" style="width:100%" />`);
       } else {
+        const blob = await domtoimage.toBlob(logoRef.current, { cacheBust: true });
+        if (!blob) throw new Error("Blob export failed");
+
+        const url = URL.createObjectURL(blob);
         const link = document.createElement("a");
         link.href = url;
         link.download = "heinz.png";
@@ -117,7 +95,6 @@ export default function Home() {
     const originalSize = svgText?.getAttribute("font-size");
 
     const isIOS = /iPhone|iPad|iPod/.test(navigator.userAgent);
-    const isMobileDevice = isIOS || /Android/i.test(navigator.userAgent);
 
     try {
       await Promise.race([
@@ -126,26 +103,22 @@ export default function Home() {
       ]);
 
       if (svgText) {
-        svgText.setAttribute("font-size", isMobileDevice ? "28" : "36");
+        svgText.setAttribute("font-size", isIOS ? "28" : "36");
         svgText.setAttribute("font-weight", "bold");
       }
 
-      const blob = await domtoimage.toBlob(logoRef.current, {
-        cacheBust: true,
-        filter: (node: HTMLElement | SVGElement) => {
-          if (!(node instanceof Element)) return true;
-          if (node.classList.contains("hide-on-export")) return false;
-          (node as HTMLElement).style.border = "none";
-          (node as HTMLElement).style.outline = "none";
-          (node as HTMLElement).style.boxShadow = "none";
-          return true;
-        },
-      });
+      let blob: Blob | null = null;
 
-      if (!blob) {
-        alert("Image export not supported on this device. Please screenshot instead.");
-        return;
+      if (isIOS) {
+        // iOS: convert base64 → Blob manually
+        const dataUrl = await domtoimage.toPng(logoRef.current, { cacheBust: true });
+        const res = await fetch(dataUrl);
+        blob = await res.blob();
+      } else {
+        blob = await domtoimage.toBlob(logoRef.current, { cacheBust: true });
       }
+
+      if (!blob) throw new Error("Image export failed");
 
       const file = new File([blob], "heinz.png", { type: "image/png" });
 
