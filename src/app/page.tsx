@@ -37,8 +37,8 @@ export default function Home() {
     deviceSize === "mobile"
       ? "M -60,410 A 260,260 0 0,1 600,415"
       : deviceSize === "tablet"
-        ? "M 0,380 A 240,230 0 0,1 600,380"
-        : "M 101,305 A 250,240 0 0,1 600,300";
+      ? "M 0,380 A 240,230 0 0,1 600,380"
+      : "M 101,305 A 250,240 0 0,1 600,300";
 
   const downloadImage = async () => {
     if (!logoRef.current) return;
@@ -170,7 +170,7 @@ export default function Home() {
   return (
     <main
       ref={logoRef}
-      className="relative min-h-screen w-full flex flex-col items-center justify-start bg-cover bg-center overflow-hidden"
+      className="relative min-h-screen w-full flex flex-col items-center justify-start bg-transparent border-0 outline-none overflow-hidden"
     >
       {/* BG image */}
       <img
@@ -235,7 +235,11 @@ export default function Home() {
 
         {text && (
           <div className="svgWrapper absolute flex justify-center top-[10%] sm:top-[3%] w-[700px] h-[520px] font-thai">
-            <svg viewBox="0 0 700 520" className="left-0 w-full h-full z-1 font-thai" onClick={() => setText("")}>
+            <svg
+              viewBox="0 0 700 520"
+              className="left-0 w-full h-full z-1 font-thai"
+              onClick={() => setText("")}
+            >
               <style>
                 {`
                   @font-face {
@@ -251,7 +255,10 @@ export default function Home() {
                 <path id="curve" d={d} fill="transparent" />
               </defs>
               <g id="mobile-shift">
-                <text className="font-thai font-bold fill-black" fontSize={isMobile ? "28" : "36"}>
+                <text
+                  className="font-thai font-bold fill-black"
+                  fontSize={isMobile ? "28" : "36"}
+                >
                   <textPath href="#curve" startOffset="50%" textAnchor="middle">
                     {text}
                   </textPath>
@@ -283,8 +290,9 @@ export default function Home() {
         </div>
 
         <div
-          className={`w-full max-w-[320px] ${isDownloading ? (isMobile ? "mt-[-40px]" : "mt-4") : "mt-4"
-            }`}
+          className={`w-full max-w-[320px] ${
+            isDownloading ? (isMobile ? "mt-[-40px]" : "mt-4") : "mt-4"
+          }`}
         >
           <img
             src="/images/hashtag.png"
