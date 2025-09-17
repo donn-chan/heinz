@@ -30,15 +30,18 @@ export default function Home() {
     const originalSize = svgText?.getAttribute("font-size");
 
     const isIOS = /iPhone|iPad|iPod/.test(navigator.userAgent);
-    const isMobile = isIOS || /Android/i.test(navigator.userAgent);
+    const isMobileDevice = isIOS || /Android/i.test(navigator.userAgent);
 
     setIsDownloading(true);
 
     try {
-      await document.fonts.ready;
+      await Promise.race([
+        document.fonts.ready,
+        new Promise(res => setTimeout(res, 1000)) // fallback after 1s
+      ]);      
 
       if (svgText) {
-        svgText.setAttribute("font-size", isMobile ? "28" : "36");
+        svgText.setAttribute("font-size", isMobileDevice ? "28" : "36");
         svgText.setAttribute("font-weight", "bold");
       }
 
@@ -52,7 +55,11 @@ export default function Home() {
           return !(style.opacity === "0" || style.display === "none" || style.visibility === "hidden");
         }
       });
-      if (!blob) return;
+      if (!blob) {
+        alert("Image export not supported on this device. Please screenshot instead.");
+        setIsDownloading(false);
+        return;
+      }
 
       const url = URL.createObjectURL(blob);
 
@@ -87,14 +94,17 @@ export default function Home() {
     const originalSize = svgText?.getAttribute("font-size");
 
     const isIOS = /iPhone|iPad|iPod/.test(navigator.userAgent);
-    const isMobile = isIOS || /Android/i.test(navigator.userAgent);
+    const isMobileDevice = isIOS || /Android/i.test(navigator.userAgent);
 
     try {
-      await document.fonts.ready;
+      await Promise.race([
+        document.fonts.ready,
+        new Promise(res => setTimeout(res, 1000)) // fallback after 1s
+      ]);      
 
       // match downloadImage sizing
       if (svgText) {
-        svgText.setAttribute("font-size", isMobile ? "28" : "36");
+        svgText.setAttribute("font-size", isMobileDevice ? "28" : "36");
         svgText.setAttribute("font-weight", "bold");
       }
 
@@ -108,7 +118,11 @@ export default function Home() {
           return !(style.opacity === "0" || style.display === "none" || style.visibility === "hidden");
         }
       });
-      if (!blob) return;
+      if (!blob) {
+        alert("Image export not supported on this device. Please screenshot instead.");
+        setIsDownloading(false);
+        return;
+      }
 
       const file = new File([blob], "heinz.png", { type: "image/png" });
 
@@ -151,6 +165,7 @@ export default function Home() {
             alt="bottle"
             width={680}
             height={1600}
+            crossOrigin="anonymous"
             className="w-full h-auto"
           />
         </div>
@@ -162,6 +177,7 @@ export default function Home() {
             alt="Headline"
             width={800}
             height={160}
+            crossOrigin="anonymous"
             className="w-full h-auto"
           />
         </div>
@@ -267,6 +283,7 @@ export default function Home() {
               alt="Hashtag"
               width={320}
               height={160}
+              crossOrigin="anonymous"
               className="w-full h-auto"
             />
           </div>
