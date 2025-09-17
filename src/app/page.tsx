@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from "react";
 import domtoimage from "dom-to-image-more";
 import { Download, Share2 } from "lucide-react";
+import BorderSafeWrapper, { borderSafeFilter } from "@/components/BorderSafeWrapper";
 
 export default function Home() {
   const [text, setText] = useState("");
@@ -37,8 +38,8 @@ export default function Home() {
     deviceSize === "mobile"
       ? "M -60,410 A 260,260 0 0,1 600,415"
       : deviceSize === "tablet"
-      ? "M 0,380 A 240,230 0 0,1 600,380"
-      : "M 101,305 A 250,240 0 0,1 600,300";
+        ? "M 0,380 A 240,230 0 0,1 600,380"
+        : "M 101,305 A 250,240 0 0,1 600,300";
 
   const downloadImage = async () => {
     if (!logoRef.current) return;
@@ -64,11 +65,11 @@ export default function Home() {
 
       if (isIOS) {
         // iOS: use toPng (base64) instead of Blob
-        const dataUrl = await domtoimage.toPng(logoRef.current, { cacheBust: true });
+        const dataUrl = await domtoimage.toPng(logoRef.current, { cacheBust: true, filter: borderSafeFilter, });
         const newTab = window.open();
         newTab?.document.write(`<img src="${dataUrl}" style="width:100%" />`);
       } else {
-        const blob = await domtoimage.toBlob(logoRef.current, { cacheBust: true });
+        const blob = await domtoimage.toBlob(logoRef.current, { cacheBust: true, filter: borderSafeFilter, });
         if (!blob) throw new Error("Blob export failed");
 
         const url = URL.createObjectURL(blob);
@@ -111,11 +112,11 @@ export default function Home() {
 
       if (isIOS) {
         // iOS: convert base64 → Blob manually
-        const dataUrl = await domtoimage.toPng(logoRef.current, { cacheBust: true });
+        const dataUrl = await domtoimage.toPng(logoRef.current, { cacheBust: true, filter: borderSafeFilter, });
         const res = await fetch(dataUrl);
         blob = await res.blob();
       } else {
-        blob = await domtoimage.toBlob(logoRef.current, { cacheBust: true });
+        blob = await domtoimage.toBlob(logoRef.current, { cacheBust: true, filter: borderSafeFilter, });
       }
 
       if (!blob) throw new Error("Image export failed");
@@ -141,10 +142,7 @@ export default function Home() {
   };
 
   return (
-    <main
-      ref={logoRef}
-      className="relative min-h-screen w-full flex flex-col items-center justify-start bg-transparent border-0 outline-none overflow-hidden"
-    >
+    <BorderSafeWrapper ref={logoRef}>
       {/* BG image */}
       <img
         src="/images/heinz-bg.png"
@@ -263,9 +261,8 @@ export default function Home() {
         </div>
 
         <div
-          className={`w-full max-w-[320px] ${
-            isDownloading ? (isMobile ? "mt-[-40px]" : "mt-4") : "mt-4"
-          }`}
+          className={`w-full max-w-[320px] ${isDownloading ? (isMobile ? "mt-[-40px]" : "mt-4") : "mt-4"
+            }`}
         >
           <img
             src="/images/hashtag.png"
@@ -277,6 +274,6 @@ export default function Home() {
           />
         </div>
       </div>
-    </main>
+    </BorderSafeWrapper>
   );
 }
