@@ -1,8 +1,7 @@
 "use client";
 
-import Image from "next/image";
 import { useState, useEffect, useRef } from "react";
-import { toPng, toBlob } from "html-to-image";
+import { toBlob } from "html-to-image";
 import { Download, Share2 } from "lucide-react";
 
 export default function Home() {
@@ -13,23 +12,21 @@ export default function Home() {
   const [isMobile, setIsMobile] = useState(false);
   const [deviceSize, setDeviceSize] = useState<"mobile" | "tablet" | "desktop">("desktop");
 
+  // mobile check
   useEffect(() => {
-    const checkScreen = () => setIsMobile(window.innerWidth < 400); // Tailwind "sm"
+    const checkScreen = () => setIsMobile(window.innerWidth < 400);
     checkScreen();
     window.addEventListener("resize", checkScreen);
     return () => window.removeEventListener("resize", checkScreen);
   }, []);
 
+  // device size
   useEffect(() => {
     const checkScreen = () => {
       const width = window.innerWidth;
-      if (width <= 400) {
-        setDeviceSize("mobile");
-      } else if (width > 400 && width < 1024) {
-        setDeviceSize("tablet");
-      } else {
-        setDeviceSize("desktop");
-      }
+      if (width <= 400) setDeviceSize("mobile");
+      else if (width > 400 && width < 1024) setDeviceSize("tablet");
+      else setDeviceSize("desktop");
     };
     checkScreen();
     window.addEventListener("resize", checkScreen);
@@ -37,11 +34,27 @@ export default function Home() {
   }, []);
 
   const d =
-  deviceSize === "mobile"
-    ? "M -60,410 A 260,260 0 0,1 600,415" // ≤400px
-    : deviceSize === "tablet"
-    ? "M 0,380 A 240,230 0 0,1 600,380"  // >400px and <1024px
-    : "M 101,305 A 250,240 0 0,1 600,300"; // ≥1024px
+    deviceSize === "mobile"
+      ? "M -60,410 A 260,260 0 0,1 600,415"
+      : deviceSize === "tablet"
+      ? "M 0,380 A 240,230 0 0,1 600,380"
+      : "M 101,305 A 250,240 0 0,1 600,300";
+
+  // preload helper
+  const preloadImages = async (container: HTMLElement) => {
+    const images = Array.from(container.querySelectorAll("img"));
+    await Promise.all(
+      images.map(
+        (img) =>
+          img.complete
+            ? Promise.resolve(true)
+            : new Promise((res, rej) => {
+                img.onload = () => res(true);
+                img.onerror = rej;
+              })
+      )
+    );
+  };
 
   const downloadImage = async () => {
     if (!logoRef.current) return;
@@ -57,8 +70,11 @@ export default function Home() {
     try {
       await Promise.race([
         document.fonts.ready,
-        new Promise(res => setTimeout(res, 1000)) // fallback after 1s
-      ]);      
+        new Promise((res) => setTimeout(res, 2000)),
+      ]);
+
+      // wait for images
+      await preloadImages(logoRef.current);
 
       if (svgText) {
         svgText.setAttribute("font-size", isMobileDevice ? "28" : "36");
@@ -72,9 +88,14 @@ export default function Home() {
           if (!(node instanceof Element)) return true;
           if (node.classList.contains("hide-on-export")) return false;
           const style = window.getComputedStyle(node);
-          return !(style.opacity === "0" || style.display === "none" || style.visibility === "hidden");
-        }
+          return !(
+            style.opacity === "0" ||
+            style.display === "none" ||
+            style.visibility === "hidden"
+          );
+        },
       });
+
       if (!blob) {
         alert("Image export not supported on this device. Please screenshot instead.");
         setIsDownloading(false);
@@ -105,8 +126,6 @@ export default function Home() {
     }
   };
 
-
-  // Share image
   const shareImage = async () => {
     if (!logoRef.current) return;
 
@@ -119,10 +138,11 @@ export default function Home() {
     try {
       await Promise.race([
         document.fonts.ready,
-        new Promise(res => setTimeout(res, 1000)) // fallback after 1s
-      ]);      
+        new Promise((res) => setTimeout(res, 1000)),
+      ]);
 
-      // match downloadImage sizing
+      await preloadImages(logoRef.current);
+
       if (svgText) {
         svgText.setAttribute("font-size", isMobileDevice ? "28" : "36");
         svgText.setAttribute("font-weight", "bold");
@@ -135,9 +155,14 @@ export default function Home() {
           if (!(node instanceof Element)) return true;
           if (node.classList.contains("hide-on-export")) return false;
           const style = window.getComputedStyle(node);
-          return !(style.opacity === "0" || style.display === "none" || style.visibility === "hidden");
-        }
+          return !(
+            style.opacity === "0" ||
+            style.display === "none" ||
+            style.visibility === "hidden"
+          );
+        },
       });
+
       if (!blob) {
         alert("Image export not supported on this device. Please screenshot instead.");
         setIsDownloading(false);
@@ -158,13 +183,11 @@ export default function Home() {
     } catch (err) {
       console.error("Share failed:", err);
     } finally {
-      // restore original font-size
       if (svgText && originalSize) {
         svgText.setAttribute("font-size", originalSize);
       }
     }
   };
-
 
   return (
     <main
@@ -172,83 +195,71 @@ export default function Home() {
       className="relative min-h-screen w-full flex flex-col items-center justify-start bg-cover bg-center p-4 sm:p-6 overflow-hidden"
     >
       {/* BG image */}
-      <div className="absolute inset-0 -z-10">
-        <Image
-          src="/images/heinz-bg.png"
-          alt="Background"
-          fill
-          className="object-cover"
+      <img
+        src="/images/heinz-bg.png"
+        alt="Background"
+        className="absolute inset-0 -z-10 w-full h-full object-cover"
+        crossOrigin="anonymous"
+      />
+
+      {/* Bottle */}
+      <div
+        className="absolute top-[-250px] max-[400px]:top-[-200px] sm:top-[-360px] sm:bottom-[-7%] 
+        left-1/2 -translate-x-[50%] 
+        w-[620px] max-[400px]:w-[540px] sm:w-[600px] md:w-full md:max-w-[700px] lg:max-w-[700px] xl:max-w-[700px]
+        h-[100vh] z-0"
+      >
+        <img
+          src="/images/bottle.png"
+          alt="bottle"
+          width={680}
+          height={1600}
           crossOrigin="anonymous"
+          className="w-full h-auto"
         />
       </div>
 
-        {/* Bottle image */}
-        <div
-          className="absolute top-[-250px] max-[400px]:top-[-200px] sm:top-[-360px] sm:bottom-[-7%] 
-      left-1/2 -translate-x-[50%] 
-      w-[620px] max-[400px]:w-[540px] sm:w-[600px] md:w-full md:max-w-[700px] lg:max-w-[700px] xl:max-w-[700px]
-      h-[100vh] z-0"
-        > 
-          <Image
-            src="/images/bottle.png"
-            alt="bottle"
-            width={680}
-            height={1600}
-            crossOrigin="anonymous"
-            className="w-full h-auto"
-          />
-        </div>
+      {/* Headline */}
+      <div className="w-full max-w-[800px] z-1 mt-[20%] sm:mt-0">
+        <img
+          src="/images/headline.png"
+          alt="Headline"
+          width={800}
+          height={160}
+          crossOrigin="anonymous"
+          className="w-full h-auto"
+        />
+      </div>
 
-        {/* Headline */}
-        <div className="w-full max-w-[800px] z-1 mt-[20%] sm:mt-0">
-          <Image
-            src="/images/headline.png"
-            alt="Headline"
-            width={800}
-            height={160}
-            crossOrigin="anonymous"
-            className="w-full h-auto"
-          />
-        </div>
-
-        {/* Logo with live text overlay */}
-        <div
-          className={`relative w-full max-w-[700px] h-[520px] logo-img z-1`}
-        >
-          <img
-            src="/images/logo.png"
-            alt="Heinz Logo"
-            className="w-[700px] h-[540px] max-[400px]:h-[520px] object-contain opacity-0"
-            crossOrigin="anonymous"
-          />
-          {/* Input field visible until user presses Enter */}
-          {!text && (
-            <input
-              type="text"
-              onKeyDown={(e) => {
-                if (e.key === "Enter") {
-                  setText((e.target as HTMLInputElement).value);
-                }
-              }}
-              maxLength={12}
-              placeholder="พิมพ์ชื่อที่คุณเรียก"
-              className="
-              absolute top-[23%] sm:top-[15%] left-1/2 -translate-x-[52%] py-[2px]
+      {/* Logo with live text overlay */}
+      <div className="relative w-full max-w-[700px] h-[520px] logo-img z-1">
+        <img
+          src="/images/logo.png"
+          alt="Heinz Logo"
+          className="w-[700px] h-[540px] max-[400px]:h-[520px] object-contain opacity-0"
+          crossOrigin="anonymous"
+        />
+        {!text && (
+          <input
+            type="text"
+            onKeyDown={(e) => {
+              if (e.key === "Enter") {
+                setText((e.target as HTMLInputElement).value);
+              }
+            }}
+            maxLength={12}
+            placeholder="พิมพ์ชื่อที่คุณเรียก"
+            className="absolute top-[23%] sm:top-[15%] left-1/2 -translate-x-[52%] py-[2px]
               w-[200px] max-[400px]:w-[180px] sm:w-[230px] text-center text-[24px] max-[400px]:text-[20px] font-thai font-bold
               text-black caret-black outline-none bg-transparent heinz-input z-1"
-            />
-          )}
+          />
+        )}
 
-          {/* Curved text shows after input is submitted */}
-          {text && (
-            <div className="svgWrapper absolute flex justify-center top-[10%] sm:top-[3%] w-[700px] h-[520px] font-thai">
-              <svg
-                viewBox="0 0 700 520"
-                className="left-0 w-full h-full z-1 font-thai"
-                onClick={() => setText("")}
-              >
-                <style>
-                  {`
+        {text && (
+          <div className="svgWrapper absolute flex justify-center top-[10%] sm:top-[3%] w-[700px] h-[520px] font-thai">
+            <svg viewBox="0 0 700 520" className="left-0 w-full h-full z-1 font-thai" onClick={() => setText("")}>
+              <style>
+                {`
                   @font-face {
                     font-family: 'NotoSansThai';
                     src: url('/fonts/NotoSansThai-Regular.woff2') format('woff2');
@@ -257,68 +268,57 @@ export default function Home() {
                     font-family: 'NotoSansThai' !important;
                   }
                 `}
-                </style>
-                <defs>
-                  <path id="curve" d={d} fill="transparent" />
-                </defs>
-                <g id="mobile-shift">
-                  <text className="font-thai font-bold fill-black" fontSize={isMobile ? "28" : "36"}>
-                    <textPath
-                      href="#curve"
-                      startOffset="50%"
-                      textAnchor="middle"
-                    // dx={isMobile ? "-12" : "0"}
-                    >
-                      {text}
-                    </textPath>
-                  </text>
+              </style>
+              <defs>
+                <path id="curve" d={d} fill="transparent" />
+              </defs>
+              <g id="mobile-shift">
+                <text className="font-thai font-bold fill-black" fontSize={isMobile ? "28" : "36"}>
+                  <textPath href="#curve" startOffset="50%" textAnchor="middle">
+                    {text}
+                  </textPath>
+                </text>
+              </g>
+            </svg>
+          </div>
+        )}
+      </div>
 
-                </g>
-              </svg>
-            </div>
-          )}
+      {/* Buttons + hashtag */}
+      <div className="flex flex-col items-center after-logo z-2">
+        <div className="flex flex-row gap-6 flex-wrap justify-center hide-on-export">
+          <button
+            onClick={downloadImage}
+            disabled={isDownloading}
+            className="inline-flex items-center justify-center px-6 py-2 rounded-[20px] bg-black/60 text-white font-thai hover:bg-black/80 transition cursor-pointer"
+          >
+            <Download size={18} className="mr-2" />
+            {isDownloading ? "Preparing…" : "Download"}
+          </button>
+          <button
+            onClick={shareImage}
+            className="inline-flex items-center justify-center px-6 py-2 rounded-[20px] bg-black/60 text-white font-thai hover:bg-black/80 transition cursor-pointer"
+          >
+            <Share2 size={18} className="mr-2" />
+            Share
+          </button>
         </div>
 
-        {/* Buttons + hashtag */}
-        <div className="flex flex-col items-center after-logo z-2">
-          <div className="flex flex-row gap-6 flex-wrap justify-center hide-on-export">
-            <button
-              onClick={downloadImage}
-              disabled={isDownloading}
-              className="inline-flex items-center justify-center px-6 py-2 rounded-[20px] bg-black/60 text-white font-thai hover:bg-black/80 transition cursor-pointer"
-            >
-              <Download size={18} className="mr-2" />
-              {isDownloading ? "Preparing…" : "Download"}
-            </button>
-            <button
-              onClick={shareImage}
-              className="inline-flex items-center justify-center px-6 py-2 rounded-[20px] bg-black/60 text-white font-thai hover:bg-black/80 transition cursor-pointer"
-            >
-              <Share2 size={18} className="mr-2" />
-              Share
-            </button>
-          </div>
-
-          <div 
+        <div
           className={`w-full max-w-[320px] ${
-            isDownloading
-              ? isMobile
-                ? "mt-[-40px]" // if downloading + mobile
-                : "mt-4" // if downloading + desktop
-              : "mt-4"         // if not downloading
-          }`}>
-            <Image
-              src="/images/hashtag.png"
-              alt="Hashtag"
-              width={320}
-              height={160}
-              crossOrigin="anonymous"
-              className="w-full h-auto"
-            />
-          </div>
+            isDownloading ? (isMobile ? "mt-[-40px]" : "mt-4") : "mt-4"
+          }`}
+        >
+          <img
+            src="/images/hashtag.png"
+            alt="Hashtag"
+            width={320}
+            height={160}
+            crossOrigin="anonymous"
+            className="w-full h-auto"
+          />
         </div>
-        {/* )} */}
-
+      </div>
     </main>
   );
 }
