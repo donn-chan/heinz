@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-// import { toBlob } from "html-to-image";
 import domtoimage from "dom-to-image-more";
 import { Download, Share2 } from "lucide-react";
 
@@ -178,7 +177,7 @@ export default function Home() {
 
       {/* Bottle */}
       <div
-        className="absolute top-[-250px] max-[400px]:top-[-250px] sm:top-[-360px] sm:bottom-[-7%] 
+        className="absolute top-[-250px] max-[400px]:top-[-240px] sm:top-[-360px] sm:bottom-[-7%] 
         left-1/2 -translate-x-[50%] 
         w-[620px] max-[400px]:w-[540px] sm:w-[600px] md:w-full md:max-w-[700px] lg:max-w-[700px] xl:max-w-[700px]
         h-[100vh] z-0"
