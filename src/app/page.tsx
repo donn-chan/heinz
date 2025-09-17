@@ -67,6 +67,10 @@ export default function Home() {
         filter: (node: HTMLElement | SVGElement) => {
           if (!(node instanceof Element)) return true;
           if (node.classList.contains("hide-on-export")) return false;
+          // remove borders/outlines/shadows
+          (node as HTMLElement).style.border = "none";
+          (node as HTMLElement).style.outline = "none";
+          (node as HTMLElement).style.boxShadow = "none";
           const style = window.getComputedStyle(node);
           return !(
             style.opacity === "0" ||
@@ -75,7 +79,6 @@ export default function Home() {
           );
         },
       });
-      
 
       if (!blob) {
         alert("Image export not supported on this device. Please screenshot instead.");
@@ -132,14 +135,12 @@ export default function Home() {
         filter: (node: HTMLElement | SVGElement) => {
           if (!(node instanceof Element)) return true;
           if (node.classList.contains("hide-on-export")) return false;
-          const style = window.getComputedStyle(node);
-          return !(
-            style.opacity === "0" ||
-            style.display === "none" ||
-            style.visibility === "hidden"
-          );
+          (node as HTMLElement).style.border = "none";
+          (node as HTMLElement).style.outline = "none";
+          (node as HTMLElement).style.boxShadow = "none";
+          return true;
         },
-      });      
+      });
 
       if (!blob) {
         alert("Image export not supported on this device. Please screenshot instead.");
@@ -165,8 +166,6 @@ export default function Home() {
       }
     }
   };
-
-
 
   return (
     <main
