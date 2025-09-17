@@ -11,6 +11,7 @@ export default function Home() {
   const logoRef = useRef<HTMLDivElement>(null);
 
   const [isMobile, setIsMobile] = useState(false);
+  const [deviceSize, setDeviceSize] = useState<"mobile" | "tablet" | "desktop">("desktop");
 
   useEffect(() => {
     const checkScreen = () => setIsMobile(window.innerWidth < 400); // Tailwind "sm"
@@ -19,9 +20,28 @@ export default function Home() {
     return () => window.removeEventListener("resize", checkScreen);
   }, []);
 
-  const d = isMobile
-    ? "M -60,410 A 260,260 0 0,1 600,415" // mobile curve (centered)
-    : "M 101,305 A 250,240 0 0,1 600,300"; // desktop curve (centered)
+  useEffect(() => {
+    const checkScreen = () => {
+      const width = window.innerWidth;
+      if (width <= 400) {
+        setDeviceSize("mobile");
+      } else if (width > 400 && width < 1024) {
+        setDeviceSize("tablet");
+      } else {
+        setDeviceSize("desktop");
+      }
+    };
+    checkScreen();
+    window.addEventListener("resize", checkScreen);
+    return () => window.removeEventListener("resize", checkScreen);
+  }, []);
+
+  const d =
+  deviceSize === "mobile"
+    ? "M -60,410 A 260,260 0 0,1 600,415" // ≤400px
+    : deviceSize === "tablet"
+    ? "M 0,380 A 240,230 0 0,1 600,380"  // >400px and <1024px
+    : "M 101,305 A 250,240 0 0,1 600,300"; // ≥1024px
 
   const downloadImage = async () => {
     if (!logoRef.current) return;
@@ -150,14 +170,23 @@ export default function Home() {
     <main
       ref={logoRef}
       className="relative min-h-screen w-full flex flex-col items-center justify-start bg-cover bg-center p-4 sm:p-6 overflow-hidden"
-      style={{ backgroundImage: "url('/images/heinz-bg.png')" }}
     >
+      {/* BG image */}
+      <div className="absolute inset-0 -z-10">
+        <Image
+          src="/images/heinz-bg.png"
+          alt="Background"
+          fill
+          className="object-cover"
+          crossOrigin="anonymous"
+        />
+      </div>
 
         {/* Bottle image */}
         <div
-          className="absolute top-[-200px] sm:top-[-360px] sm:bottom-[-7%] 
+          className="absolute top-[-250px] max-[400px]:top-[-200px] sm:top-[-360px] sm:bottom-[-7%] 
       left-1/2 -translate-x-[50%] 
-      w-[540px] sm:w-full sm:max-w-[680px] lg:max-w-[700px] xl:max-w-[700px]
+      w-[620px] max-[400px]:w-[540px] sm:w-[600px] md:w-full md:max-w-[700px] lg:max-w-[700px] xl:max-w-[700px]
       h-[100vh] z-0"
         > 
           <Image
@@ -189,7 +218,7 @@ export default function Home() {
           <img
             src="/images/logo.png"
             alt="Heinz Logo"
-            className="w-[700px] h-[520px] object-contain opacity-0"
+            className="w-[700px] h-[540px] max-[400px]:h-[520px] object-contain opacity-0"
             crossOrigin="anonymous"
           />
           {/* Input field visible until user presses Enter */}
@@ -205,7 +234,7 @@ export default function Home() {
               placeholder="พิมพ์ชื่อที่คุณเรียก"
               className="
               absolute top-[23%] sm:top-[15%] left-1/2 -translate-x-[52%] py-[2px]
-              w-[180px] sm:w-[230px] text-center sm:text-[28px] text-[20px] font-thai font-bold
+              w-[200px] max-[400px]:w-[180px] sm:w-[230px] text-center text-[24px] max-[400px]:text-[20px] font-thai font-bold
               text-black caret-black outline-none bg-transparent heinz-input z-1"
             />
           )}
