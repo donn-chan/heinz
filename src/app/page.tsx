@@ -64,15 +64,18 @@ export default function Home() {
 
       const blob = await domtoimage.toBlob(logoRef.current, {
         cacheBust: true,
-        filter: (node) => {
+        filter: (node: HTMLElement | SVGElement) => {
           if (!(node instanceof Element)) return true;
-          // force remove borders/outlines
-          node.style.border = "none";
-          node.style.outline = "none";
-          node.style.boxShadow = "none";
-          return !(node.classList.contains("hide-on-export"));
+          if (node.classList.contains("hide-on-export")) return false;
+          const style = window.getComputedStyle(node);
+          return !(
+            style.opacity === "0" ||
+            style.display === "none" ||
+            style.visibility === "hidden"
+          );
         },
       });
+      
 
       if (!blob) {
         alert("Image export not supported on this device. Please screenshot instead.");
@@ -126,14 +129,17 @@ export default function Home() {
 
       const blob = await domtoimage.toBlob(logoRef.current, {
         cacheBust: true,
-        filter: (node) => {
+        filter: (node: HTMLElement | SVGElement) => {
           if (!(node instanceof Element)) return true;
-          node.style.border = "none";
-          node.style.outline = "none";
-          node.style.boxShadow = "none";
-          return !(node.classList.contains("hide-on-export"));
+          if (node.classList.contains("hide-on-export")) return false;
+          const style = window.getComputedStyle(node);
+          return !(
+            style.opacity === "0" ||
+            style.display === "none" ||
+            style.visibility === "hidden"
+          );
         },
-      });
+      });      
 
       if (!blob) {
         alert("Image export not supported on this device. Please screenshot instead.");
