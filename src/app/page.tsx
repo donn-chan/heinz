@@ -251,7 +251,7 @@ export default function Home() {
 
                 // ✅ Show spinner for 3s, disable buttons
                 setIsPreparing(true);
-                setTimeout(() => setIsPreparing(false), 2000);
+                setTimeout(() => setIsPreparing(false), 3000);
               }
             }}
             maxLength={12}
