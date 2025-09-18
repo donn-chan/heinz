@@ -87,7 +87,7 @@ export default function Home() {
 
       const blob = await toBlob(logoRef.current, {
         cacheBust: true,
-        pixelRatio: isMobileDevice ? 0.5 : 1,
+        pixelRatio: isMobileDevice ? 0.75 : 1,
         imagePlaceholder: "",
         filter: (node) => {
           if (!(node instanceof Element)) return true;
@@ -153,7 +153,7 @@ export default function Home() {
 
       const blob = await toBlob(logoRef.current, {
         cacheBust: true,
-        pixelRatio: isMobileDevice ? 0.5 : 1,
+        pixelRatio: isMobileDevice ? 0.75 : 1,
         imagePlaceholder: "",
         filter: (node) => {
           if (!(node instanceof Element)) return true;
