@@ -7,7 +7,6 @@ import { Download, Share2 } from "lucide-react";
 export default function Home() {
   const [text, setText] = useState("");
   const [isDownloading, setIsDownloading] = useState(false);
-  const [isPreparing, setIsPreparing] = useState(false); // ✅ spinner state
   const logoRef = useRef<HTMLDivElement>(null);
 
   const [isMobile, setIsMobile] = useState(false);
@@ -41,13 +40,8 @@ export default function Home() {
       ? "M 0,380 A 240,230 0 0,1 600,380"
       : "M 101,305 A 250,240 0 0,1 600,300";
 
-  // ✅ helper: wait for fonts + images
-  const ensureReady = async (container: HTMLElement) => {
-    await Promise.race([
-      document.fonts.ready,
-      new Promise((res) => setTimeout(res, 4000)),
-    ]);
-
+  // preload helper
+  const preloadImages = async (container: HTMLElement) => {
     const images = Array.from(container.querySelectorAll("img"));
     await Promise.all(
       images.map(
@@ -72,11 +66,15 @@ export default function Home() {
     const isMobileDevice = isIOS || /Android/i.test(navigator.userAgent);
 
     setIsDownloading(true);
-    setIsPreparing(true);
 
     try {
-      await ensureReady(logoRef.current);
-      setIsPreparing(false);
+      await Promise.race([
+        document.fonts.ready,
+        new Promise((res) => setTimeout(res, 2000)),
+      ]);
+
+      // wait for images
+      await preloadImages(logoRef.current);
 
       if (svgText) {
         svgText.setAttribute("font-size", isMobileDevice ? "28" : "36");
@@ -85,8 +83,7 @@ export default function Home() {
 
       const blob = await toBlob(logoRef.current, {
         cacheBust: true,
-        pixelRatio: isMobileDevice ? 0.75 : 1,
-        imagePlaceholder: "",
+        pixelRatio: isMobileDevice ? 0.5 : 1, // scale down on mobile
         filter: (node) => {
           if (!(node instanceof Element)) return true;
           if (node.classList.contains("hide-on-export")) return false;
@@ -101,6 +98,7 @@ export default function Home() {
 
       if (!blob) {
         alert("Image export not supported on this device. Please screenshot instead.");
+        setIsDownloading(false);
         return;
       }
 
@@ -114,14 +112,13 @@ export default function Home() {
       } else {
         const link = document.createElement("a");
         link.href = url;
-        link.download = "heinz.png";
+        link.download = "heinz.webp";
         link.click();
         URL.revokeObjectURL(url);
       }
     } catch (err) {
       console.error("Download failed:", err);
     } finally {
-      setIsPreparing(false);
       if (svgText && originalSize) {
         svgText.setAttribute("font-size", originalSize);
       }
@@ -138,11 +135,13 @@ export default function Home() {
     const isIOS = /iPhone|iPad|iPod/.test(navigator.userAgent);
     const isMobileDevice = isIOS || /Android/i.test(navigator.userAgent);
 
-    setIsPreparing(true);
-
     try {
-      await ensureReady(logoRef.current);
-      setIsPreparing(false);
+      await Promise.race([
+        document.fonts.ready,
+        new Promise((res) => setTimeout(res, 1000)),
+      ]);
+
+      await preloadImages(logoRef.current);
 
       if (svgText) {
         svgText.setAttribute("font-size", isMobileDevice ? "28" : "36");
@@ -151,8 +150,7 @@ export default function Home() {
 
       const blob = await toBlob(logoRef.current, {
         cacheBust: true,
-        pixelRatio: isMobileDevice ? 0.75 : 1,
-        imagePlaceholder: "",
+        pixelRatio: isMobileDevice ? 0.5 : 1, // scale down on mobile
         filter: (node) => {
           if (!(node instanceof Element)) return true;
           if (node.classList.contains("hide-on-export")) return false;
@@ -167,10 +165,11 @@ export default function Home() {
 
       if (!blob) {
         alert("Image export not supported on this device. Please screenshot instead.");
+        setIsDownloading(false);
         return;
       }
 
-      const file = new File([blob], "heinz.png", { type: "image/png" });
+      const file = new File([blob], "heinz.webp", { type: "image/png" });
 
       if (navigator.canShare && navigator.canShare({ files: [file] })) {
         await navigator.share({
@@ -184,7 +183,6 @@ export default function Home() {
     } catch (err) {
       console.error("Share failed:", err);
     } finally {
-      setIsPreparing(false);
       if (svgText && originalSize) {
         svgText.setAttribute("font-size", originalSize);
       }
@@ -196,7 +194,7 @@ export default function Home() {
       ref={logoRef}
       className="relative min-h-screen w-full flex flex-col items-center justify-start bg-cover bg-center p-4 sm:p-6 overflow-hidden"
     >
-      {/* BG */}
+      {/* BG image */}
       <img
         src="/images/heinz-bg.webp"
         alt="Background"
@@ -233,7 +231,7 @@ export default function Home() {
         />
       </div>
 
-      {/* Logo + Input */}
+      {/* Logo with live text overlay */}
       <div className="relative w-full max-w-[700px] h-[520px] logo-img z-1">
         <img
           src="/images/logo.webp"
@@ -246,29 +244,20 @@ export default function Home() {
             type="text"
             onKeyDown={(e) => {
               if (e.key === "Enter") {
-                const value = (e.target as HTMLInputElement).value;
-                setText(value);
-
-                // ✅ Show spinner for 3s, disable buttons
-                setIsPreparing(true);
-                setTimeout(() => setIsPreparing(false), 3000);
+                setText((e.target as HTMLInputElement).value);
               }
             }}
             maxLength={12}
             placeholder="พิมพ์ชื่อที่คุณเรียก"
             className="absolute top-[23%] sm:top-[15%] left-1/2 -translate-x-[52%] py-[2px]
-            w-[200px] max-[400px]:w-[180px] sm:w-[230px] text-center text-[24px] max-[400px]:text-[20px] font-thai font-bold
-            text-black caret-black outline-none bg-transparent heinz-input z-1"
+              w-[200px] max-[400px]:w-[180px] sm:w-[230px] text-center text-[24px] max-[400px]:text-[20px] font-thai font-bold
+              text-black caret-black outline-none bg-transparent heinz-input z-1"
           />
         )}
 
         {text && (
           <div className="svgWrapper absolute flex justify-center top-[10%] sm:top-[3%] w-[700px] h-[520px] font-thai">
-            <svg
-              viewBox="0 0 700 520"
-              className="left-0 w-full h-full z-1 font-thai"
-              onClick={() => setText("")}
-            >
+            <svg viewBox="0 0 700 520" className="left-0 w-full h-full z-1 font-thai" onClick={() => setText("")}>
               <style>
                 {`
                   @font-face {
@@ -295,29 +284,20 @@ export default function Home() {
         )}
       </div>
 
-      {/* Buttons */}
+      {/* Buttons + hashtag */}
       <div className="flex flex-col items-center after-logo z-2">
         <div className="flex flex-row gap-6 flex-wrap justify-center hide-on-export">
           <button
             onClick={downloadImage}
-            disabled={isDownloading || isPreparing}
-            className={`inline-flex items-center justify-center px-6 py-2 rounded-[20px] font-thai transition cursor-pointer ${
-              isPreparing
-                ? "bg-black/30 text-gray-400 cursor-not-allowed"
-                : "bg-black/60 text-white hover:bg-black/80"
-            }`}
+            disabled={isDownloading}
+            className="inline-flex items-center justify-center px-6 py-2 rounded-[20px] bg-black/60 text-white font-thai hover:bg-black/80 transition cursor-pointer"
           >
             <Download size={18} className="mr-2" />
             {isDownloading ? "Preparing…" : "Download"}
           </button>
           <button
             onClick={shareImage}
-            disabled={isPreparing}
-            className={`inline-flex items-center justify-center px-6 py-2 rounded-[20px] font-thai transition cursor-pointer ${
-              isPreparing
-                ? "bg-black/30 text-gray-400 cursor-not-allowed"
-                : "bg-black/60 text-white hover:bg-black/80"
-            }`}
+            className="inline-flex items-center justify-center px-6 py-2 rounded-[20px] bg-black/60 text-white font-thai hover:bg-black/80 transition cursor-pointer"
           >
             <Share2 size={18} className="mr-2" />
             Share
@@ -339,14 +319,6 @@ export default function Home() {
           />
         </div>
       </div>
-
-      {/* Spinner Overlay */}
-      {isPreparing && (
-        <div className="absolute inset-0 bg-black/50 flex flex-col items-center justify-center z-50">
-          <div className="w-12 h-12 border-4 border-white border-t-transparent rounded-full animate-spin"></div>
-          <p className="mt-4 text-white font-thai">Preparing image…</p>
-        </div>
-      )}
     </main>
   );
 }
