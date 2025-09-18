@@ -83,7 +83,7 @@ export default function Home() {
 
       const blob = await toBlob(logoRef.current, {
         cacheBust: true,
-        imagePlaceholder: "",
+        pixelRatio: isMobileDevice ? 0.5 : 1, // scale down on mobile
         filter: (node) => {
           if (!(node instanceof Element)) return true;
           if (node.classList.contains("hide-on-export")) return false;
@@ -112,7 +112,7 @@ export default function Home() {
       } else {
         const link = document.createElement("a");
         link.href = url;
-        link.download = "heinz.png";
+        link.download = "heinz.webp";
         link.click();
         URL.revokeObjectURL(url);
       }
@@ -150,7 +150,7 @@ export default function Home() {
 
       const blob = await toBlob(logoRef.current, {
         cacheBust: true,
-        imagePlaceholder: "",
+        pixelRatio: isMobileDevice ? 0.5 : 1, // scale down on mobile
         filter: (node) => {
           if (!(node instanceof Element)) return true;
           if (node.classList.contains("hide-on-export")) return false;
@@ -169,7 +169,7 @@ export default function Home() {
         return;
       }
 
-      const file = new File([blob], "heinz.png", { type: "image/png" });
+      const file = new File([blob], "heinz.webp", { type: "image/png" });
 
       if (navigator.canShare && navigator.canShare({ files: [file] })) {
         await navigator.share({
@@ -196,7 +196,7 @@ export default function Home() {
     >
       {/* BG image */}
       <img
-        src="/images/heinz-bg.png"
+        src="/images/heinz-bg.webp"
         alt="Background"
         className="absolute inset-0 -z-10 w-full h-full object-cover"
         crossOrigin="anonymous"
@@ -210,7 +210,7 @@ export default function Home() {
         h-[100vh] z-0"
       >
         <img
-          src="/images/bottle.png"
+          src="/images/bottle.webp"
           alt="bottle"
           width={680}
           height={1600}
@@ -222,7 +222,7 @@ export default function Home() {
       {/* Headline */}
       <div className="w-full max-w-[800px] z-1 mt-[20%] sm:mt-0">
         <img
-          src="/images/headline.png"
+          src="/images/headline.webp"
           alt="Headline"
           width={800}
           height={160}
@@ -234,7 +234,7 @@ export default function Home() {
       {/* Logo with live text overlay */}
       <div className="relative w-full max-w-[700px] h-[520px] logo-img z-1">
         <img
-          src="/images/logo.png"
+          src="/images/logo.webp"
           alt="Heinz Logo"
           className="w-[700px] h-[540px] max-[400px]:h-[520px] object-contain opacity-0"
           crossOrigin="anonymous"
@@ -310,7 +310,7 @@ export default function Home() {
           }`}
         >
           <img
-            src="/images/hashtag.png"
+            src="/images/hashtag.webp"
             alt="Hashtag"
             width={320}
             height={160}
