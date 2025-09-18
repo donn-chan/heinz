@@ -7,10 +7,13 @@ import { Download, Share2 } from "lucide-react";
 export default function Home() {
   const [text, setText] = useState("");
   const [isDownloading, setIsDownloading] = useState(false);
+  const [isPreparing, setIsPreparing] = useState(false); // ✅ new state for spinner
   const logoRef = useRef<HTMLDivElement>(null);
 
   const [isMobile, setIsMobile] = useState(false);
-  const [deviceSize, setDeviceSize] = useState<"mobile" | "tablet" | "desktop">("desktop");
+  const [deviceSize, setDeviceSize] = useState<"mobile" | "tablet" | "desktop">(
+    "desktop"
+  );
 
   // mobile check
   useEffect(() => {
@@ -40,8 +43,13 @@ export default function Home() {
       ? "M 0,380 A 240,230 0 0,1 600,380"
       : "M 101,305 A 250,240 0 0,1 600,300";
 
-  // preload helper
-  const preloadImages = async (container: HTMLElement) => {
+  // ✅ helper: wait for fonts + images
+  const ensureReady = async (container: HTMLElement) => {
+    await Promise.race([
+      document.fonts.ready,
+      new Promise((res) => setTimeout(res, 3000)),
+    ]);
+
     const images = Array.from(container.querySelectorAll("img"));
     await Promise.all(
       images.map(
@@ -66,15 +74,11 @@ export default function Home() {
     const isMobileDevice = isIOS || /Android/i.test(navigator.userAgent);
 
     setIsDownloading(true);
+    setIsPreparing(true); // ✅ show spinner
 
     try {
-      await Promise.race([
-        document.fonts.ready,
-        new Promise((res) => setTimeout(res, 2000)),
-      ]);
-
-      // wait for images
-      await preloadImages(logoRef.current);
+      await ensureReady(logoRef.current);
+      setIsPreparing(false);
 
       if (svgText) {
         svgText.setAttribute("font-size", isMobileDevice ? "28" : "36");
@@ -83,7 +87,8 @@ export default function Home() {
 
       const blob = await toBlob(logoRef.current, {
         cacheBust: true,
-        pixelRatio: isMobileDevice ? 0.5 : 1, // scale down on mobile
+        pixelRatio: isMobileDevice ? 0.5 : 1,
+        imagePlaceholder: "",
         filter: (node) => {
           if (!(node instanceof Element)) return true;
           if (node.classList.contains("hide-on-export")) return false;
@@ -98,7 +103,6 @@ export default function Home() {
 
       if (!blob) {
         alert("Image export not supported on this device. Please screenshot instead.");
-        setIsDownloading(false);
         return;
       }
 
@@ -112,13 +116,14 @@ export default function Home() {
       } else {
         const link = document.createElement("a");
         link.href = url;
-        link.download = "heinz.webp";
+        link.download = "heinz.png";
         link.click();
         URL.revokeObjectURL(url);
       }
     } catch (err) {
       console.error("Download failed:", err);
     } finally {
+      setIsPreparing(false);
       if (svgText && originalSize) {
         svgText.setAttribute("font-size", originalSize);
       }
@@ -135,13 +140,11 @@ export default function Home() {
     const isIOS = /iPhone|iPad|iPod/.test(navigator.userAgent);
     const isMobileDevice = isIOS || /Android/i.test(navigator.userAgent);
 
-    try {
-      await Promise.race([
-        document.fonts.ready,
-        new Promise((res) => setTimeout(res, 1000)),
-      ]);
+    setIsPreparing(true); // ✅ show spinner
 
-      await preloadImages(logoRef.current);
+    try {
+      await ensureReady(logoRef.current);
+      setIsPreparing(false);
 
       if (svgText) {
         svgText.setAttribute("font-size", isMobileDevice ? "28" : "36");
@@ -150,7 +153,8 @@ export default function Home() {
 
       const blob = await toBlob(logoRef.current, {
         cacheBust: true,
-        pixelRatio: isMobileDevice ? 0.5 : 1, // scale down on mobile
+        pixelRatio: isMobileDevice ? 0.5 : 1,
+        imagePlaceholder: "",
         filter: (node) => {
           if (!(node instanceof Element)) return true;
           if (node.classList.contains("hide-on-export")) return false;
@@ -165,11 +169,10 @@ export default function Home() {
 
       if (!blob) {
         alert("Image export not supported on this device. Please screenshot instead.");
-        setIsDownloading(false);
         return;
       }
 
-      const file = new File([blob], "heinz.webp", { type: "image/png" });
+      const file = new File([blob], "heinz.png", { type: "image/png" });
 
       if (navigator.canShare && navigator.canShare({ files: [file] })) {
         await navigator.share({
@@ -183,6 +186,7 @@ export default function Home() {
     } catch (err) {
       console.error("Share failed:", err);
     } finally {
+      setIsPreparing(false);
       if (svgText && originalSize) {
         svgText.setAttribute("font-size", originalSize);
       }
@@ -257,7 +261,11 @@ export default function Home() {
 
         {text && (
           <div className="svgWrapper absolute flex justify-center top-[10%] sm:top-[3%] w-[700px] h-[520px] font-thai">
-            <svg viewBox="0 0 700 520" className="left-0 w-full h-full z-1 font-thai" onClick={() => setText("")}>
+            <svg
+              viewBox="0 0 700 520"
+              className="left-0 w-full h-full z-1 font-thai"
+              onClick={() => setText("")}
+            >
               <style>
                 {`
                   @font-face {
@@ -273,7 +281,10 @@ export default function Home() {
                 <path id="curve" d={d} fill="transparent" />
               </defs>
               <g id="mobile-shift">
-                <text className="font-thai font-bold fill-black" fontSize={isMobile ? "28" : "36"}>
+                <text
+                  className="font-thai font-bold fill-black"
+                  fontSize={isMobile ? "28" : "36"}
+                >
                   <textPath href="#curve" startOffset="50%" textAnchor="middle">
                     {text}
                   </textPath>
@@ -319,6 +330,14 @@ export default function Home() {
           />
         </div>
       </div>
+
+      {/* ✅ Spinner Overlay */}
+      {isPreparing && (
+        <div className="absolute inset-0 bg-black/50 flex flex-col items-center justify-center z-50">
+          <div className="w-12 h-12 border-4 border-white border-t-transparent rounded-full animate-spin"></div>
+          <p className="mt-4 text-white font-thai">Preparing image…</p>
+        </div>
+      )}
     </main>
   );
 }
