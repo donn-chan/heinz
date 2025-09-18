@@ -40,8 +40,8 @@ export default function Home() {
     deviceSize === "mobile"
       ? "M -60,410 A 260,260 0 0,1 600,415"
       : deviceSize === "tablet"
-      ? "M 0,380 A 240,230 0 0,1 600,380"
-      : "M 101,305 A 250,240 0 0,1 600,300";
+        ? "M 0,380 A 240,230 0 0,1 600,380"
+        : "M 101,305 A 250,240 0 0,1 600,300";
 
   // ✅ helper: wait for fonts + images
   const ensureReady = async (container: HTMLElement) => {
@@ -57,9 +57,9 @@ export default function Home() {
           img.complete
             ? Promise.resolve(true)
             : new Promise((res, rej) => {
-                img.onload = () => res(true);
-                img.onerror = rej;
-              })
+              img.onload = () => res(true);
+              img.onerror = rej;
+            })
       )
     );
   };
@@ -246,17 +246,28 @@ export default function Home() {
         {!text && (
           <input
             type="text"
-            onKeyDown={(e) => {
+            onKeyDown={async (e) => {
               if (e.key === "Enter") {
-                setText((e.target as HTMLInputElement).value);
+                const value = (e.target as HTMLInputElement).value;
+
+                setIsPreparing(true);        // show spinner
+                setText(value);              // trigger curved text render
+
+                // Wait for fonts + images before hiding spinner
+                if (logoRef.current) {
+                  await ensureReady(logoRef.current);
+                }
+
+                setIsPreparing(false);       // hide spinner
               }
             }}
             maxLength={12}
             placeholder="พิมพ์ชื่อที่คุณเรียก"
             className="absolute top-[23%] sm:top-[15%] left-1/2 -translate-x-[52%] py-[2px]
-              w-[200px] max-[400px]:w-[180px] sm:w-[230px] text-center text-[24px] max-[400px]:text-[20px] font-thai font-bold
-              text-black caret-black outline-none bg-transparent heinz-input z-1"
+            w-[200px] max-[400px]:w-[180px] sm:w-[230px] text-center text-[24px] max-[400px]:text-[20px] font-thai font-bold
+            text-black caret-black outline-none bg-transparent heinz-input z-1"
           />
+
         )}
 
         {text && (
@@ -316,9 +327,8 @@ export default function Home() {
         </div>
 
         <div
-          className={`w-full max-w-[320px] ${
-            isDownloading ? (isMobile ? "mt-[-40px]" : "mt-4") : "mt-4"
-          }`}
+          className={`w-full max-w-[320px] ${isDownloading ? (isMobile ? "mt-[-40px]" : "mt-4") : "mt-4"
+            }`}
         >
           <img
             src="/images/hashtag.webp"
