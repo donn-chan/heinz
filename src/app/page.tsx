@@ -38,15 +38,18 @@ export default function Home() {
     deviceSize === "mobile"
       ? "M -60,410 A 260,260 0 0,1 600,415"
       : deviceSize === "tablet"
-      ? "M 0,380 A 240,230 0 0,1 600,380"
-      : "M 101,305 A 250,240 0 0,1 600,300";
+        ? "M 0,380 A 240,230 0 0,1 600,380"
+        : "M 101,305 A 250,240 0 0,1 600,300";
 
-  // ✅ helper: wait for fonts + images
+  // ✅ Helper: Wait for fonts + images + force reflow
   const ensureReady = async (container: HTMLElement) => {
     await Promise.race([
       document.fonts.ready,
       new Promise((res) => setTimeout(res, 4000)),
     ]);
+
+    // ✅ Force reflow to ensure text is actually painted (fixes iOS Safari bug)
+    document.body.offsetHeight;
 
     const images = Array.from(container.querySelectorAll("img"));
     await Promise.all(
@@ -55,9 +58,9 @@ export default function Home() {
           img.complete
             ? Promise.resolve(true)
             : new Promise((res, rej) => {
-                img.onload = () => res(true);
-                img.onerror = rej;
-              })
+              img.onload = () => res(true);
+              img.onerror = rej;
+            })
       )
     );
   };
@@ -67,21 +70,18 @@ export default function Home() {
 
     const svgText = logoRef.current.querySelector("text");
     const originalSize = svgText?.getAttribute("font-size");
-
     const isIOS = /iPhone|iPad|iPod/.test(navigator.userAgent);
     const isMobileDevice = isIOS || /Android/i.test(navigator.userAgent);
 
-    setIsDownloading(true);
-    setIsPreparing(true);
-
     try {
       await ensureReady(logoRef.current);
-      setIsPreparing(false);
 
       if (svgText) {
         svgText.setAttribute("font-size", isMobileDevice ? "28" : "36");
         svgText.setAttribute("font-weight", "bold");
       }
+
+      setIsPreparing(true); // ✅ AFTER everything is ready
 
       const blob = await toBlob(logoRef.current, {
         cacheBust: true,
@@ -120,12 +120,10 @@ export default function Home() {
       }
     } catch (err) {
       console.error("Download failed:", err);
+      alert("Failed to prepare image. Please try again.");
     } finally {
+      if (svgText && originalSize) svgText.setAttribute("font-size", originalSize);
       setIsPreparing(false);
-      if (svgText && originalSize) {
-        svgText.setAttribute("font-size", originalSize);
-      }
-      setIsDownloading(false);
     }
   };
 
@@ -134,20 +132,18 @@ export default function Home() {
 
     const svgText = logoRef.current.querySelector("text");
     const originalSize = svgText?.getAttribute("font-size");
-
     const isIOS = /iPhone|iPad|iPod/.test(navigator.userAgent);
     const isMobileDevice = isIOS || /Android/i.test(navigator.userAgent);
 
-    setIsPreparing(true);
-
     try {
       await ensureReady(logoRef.current);
-      setIsPreparing(false);
 
       if (svgText) {
         svgText.setAttribute("font-size", isMobileDevice ? "28" : "36");
         svgText.setAttribute("font-weight", "bold");
       }
+
+      setIsPreparing(true);
 
       const blob = await toBlob(logoRef.current, {
         cacheBust: true,
@@ -183,13 +179,13 @@ export default function Home() {
       }
     } catch (err) {
       console.error("Share failed:", err);
+      alert("Failed to share image. Please try again.");
     } finally {
+      if (svgText && originalSize) svgText.setAttribute("font-size", originalSize);
       setIsPreparing(false);
-      if (svgText && originalSize) {
-        svgText.setAttribute("font-size", originalSize);
-      }
     }
   };
+
 
   return (
     <main
@@ -301,11 +297,10 @@ export default function Home() {
           <button
             onClick={downloadImage}
             disabled={isDownloading || isPreparing}
-            className={`inline-flex items-center justify-center px-6 py-2 rounded-[20px] font-thai transition cursor-pointer ${
-              isPreparing
+            className={`inline-flex items-center justify-center px-6 py-2 rounded-[20px] font-thai transition cursor-pointer ${isPreparing
                 ? "bg-black/30 text-gray-400 cursor-not-allowed"
                 : "bg-black/60 text-white hover:bg-black/80"
-            }`}
+              }`}
           >
             <Download size={18} className="mr-2" />
             {isDownloading ? "Preparing…" : "Download"}
@@ -313,11 +308,10 @@ export default function Home() {
           <button
             onClick={shareImage}
             disabled={isPreparing}
-            className={`inline-flex items-center justify-center px-6 py-2 rounded-[20px] font-thai transition cursor-pointer ${
-              isPreparing
+            className={`inline-flex items-center justify-center px-6 py-2 rounded-[20px] font-thai transition cursor-pointer ${isPreparing
                 ? "bg-black/30 text-gray-400 cursor-not-allowed"
                 : "bg-black/60 text-white hover:bg-black/80"
-            }`}
+              }`}
           >
             <Share2 size={18} className="mr-2" />
             Share
@@ -325,9 +319,8 @@ export default function Home() {
         </div>
 
         <div
-          className={`w-full max-w-[320px] ${
-            isDownloading ? (isMobile ? "mt-[-40px]" : "mt-4") : "mt-4"
-          }`}
+          className={`w-full max-w-[320px] ${isDownloading ? (isMobile ? "mt-[-40px]" : "mt-4") : "mt-4"
+            }`}
         >
           <img
             src="/images/hashtag.webp"
@@ -342,7 +335,7 @@ export default function Home() {
 
       {/* Spinner Overlay */}
       {isPreparing && (
-        <div className="absolute inset-0 bg-black/50 flex flex-col items-center justify-center z-50">
+        <div className="absolute inset-0 bg-black/50 flex flex-col items-center justify-center z-50 hide-on-export">
           <div className="w-12 h-12 border-4 border-white border-t-transparent rounded-full animate-spin"></div>
           <p className="mt-4 text-white font-thai">Preparing image…</p>
         </div>
