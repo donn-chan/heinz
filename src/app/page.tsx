@@ -1,9 +1,8 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import domtoimage from "dom-to-image-more";
+import { toBlob } from "html-to-image";
 import { Download, Share2 } from "lucide-react";
-import BorderSafeWrapper, { borderSafeFilter } from "@/components/BorderSafeWrapper";
 
 export default function Home() {
   const [text, setText] = useState("");
@@ -38,8 +37,24 @@ export default function Home() {
     deviceSize === "mobile"
       ? "M -60,410 A 260,260 0 0,1 600,415"
       : deviceSize === "tablet"
-        ? "M 0,380 A 240,230 0 0,1 600,380"
-        : "M 101,305 A 250,240 0 0,1 600,300";
+      ? "M 0,380 A 240,230 0 0,1 600,380"
+      : "M 101,305 A 250,240 0 0,1 600,300";
+
+  // preload helper
+  const preloadImages = async (container: HTMLElement) => {
+    const images = Array.from(container.querySelectorAll("img"));
+    await Promise.all(
+      images.map(
+        (img) =>
+          img.complete
+            ? Promise.resolve(true)
+            : new Promise((res, rej) => {
+                img.onload = () => res(true);
+                img.onerror = rej;
+              })
+      )
+    );
+  };
 
   const downloadImage = async () => {
     if (!logoRef.current) return;
@@ -58,21 +73,43 @@ export default function Home() {
         new Promise((res) => setTimeout(res, 2000)),
       ]);
 
+      // wait for images
+      await preloadImages(logoRef.current);
+
       if (svgText) {
         svgText.setAttribute("font-size", isMobileDevice ? "28" : "36");
         svgText.setAttribute("font-weight", "bold");
       }
 
-      if (isIOS) {
-        // iOS: use toPng (base64) instead of Blob
-        const dataUrl = await domtoimage.toPng(logoRef.current, { cacheBust: true, filter: borderSafeFilter, });
-        const newTab = window.open();
-        newTab?.document.write(`<img src="${dataUrl}" style="width:100%" />`);
-      } else {
-        const blob = await domtoimage.toBlob(logoRef.current, { cacheBust: true, filter: borderSafeFilter, });
-        if (!blob) throw new Error("Blob export failed");
+      const blob = await toBlob(logoRef.current, {
+        cacheBust: true,
+        imagePlaceholder: "",
+        filter: (node) => {
+          if (!(node instanceof Element)) return true;
+          if (node.classList.contains("hide-on-export")) return false;
+          const style = window.getComputedStyle(node);
+          return !(
+            style.opacity === "0" ||
+            style.display === "none" ||
+            style.visibility === "hidden"
+          );
+        },
+      });
 
-        const url = URL.createObjectURL(blob);
+      if (!blob) {
+        alert("Image export not supported on this device. Please screenshot instead.");
+        setIsDownloading(false);
+        return;
+      }
+
+      const url = URL.createObjectURL(blob);
+
+      if (isIOS) {
+        setTimeout(() => {
+          window.open(url, "_blank");
+          URL.revokeObjectURL(url);
+        }, 200);
+      } else {
         const link = document.createElement("a");
         link.href = url;
         link.download = "heinz.png";
@@ -96,6 +133,7 @@ export default function Home() {
     const originalSize = svgText?.getAttribute("font-size");
 
     const isIOS = /iPhone|iPad|iPod/.test(navigator.userAgent);
+    const isMobileDevice = isIOS || /Android/i.test(navigator.userAgent);
 
     try {
       await Promise.race([
@@ -103,23 +141,33 @@ export default function Home() {
         new Promise((res) => setTimeout(res, 1000)),
       ]);
 
+      await preloadImages(logoRef.current);
+
       if (svgText) {
-        svgText.setAttribute("font-size", isIOS ? "28" : "36");
+        svgText.setAttribute("font-size", isMobileDevice ? "28" : "36");
         svgText.setAttribute("font-weight", "bold");
       }
 
-      let blob: Blob | null = null;
+      const blob = await toBlob(logoRef.current, {
+        cacheBust: true,
+        imagePlaceholder: "",
+        filter: (node) => {
+          if (!(node instanceof Element)) return true;
+          if (node.classList.contains("hide-on-export")) return false;
+          const style = window.getComputedStyle(node);
+          return !(
+            style.opacity === "0" ||
+            style.display === "none" ||
+            style.visibility === "hidden"
+          );
+        },
+      });
 
-      if (isIOS) {
-        // iOS: convert base64 → Blob manually
-        const dataUrl = await domtoimage.toPng(logoRef.current, { cacheBust: true, filter: borderSafeFilter, });
-        const res = await fetch(dataUrl);
-        blob = await res.blob();
-      } else {
-        blob = await domtoimage.toBlob(logoRef.current, { cacheBust: true, filter: borderSafeFilter, });
+      if (!blob) {
+        alert("Image export not supported on this device. Please screenshot instead.");
+        setIsDownloading(false);
+        return;
       }
-
-      if (!blob) throw new Error("Image export failed");
 
       const file = new File([blob], "heinz.png", { type: "image/png" });
 
@@ -142,7 +190,10 @@ export default function Home() {
   };
 
   return (
-    <BorderSafeWrapper ref={logoRef}>
+    <main
+      ref={logoRef}
+      className="relative min-h-screen w-full flex flex-col items-center justify-start bg-cover bg-center p-4 sm:p-6 overflow-hidden"
+    >
       {/* BG image */}
       <img
         src="/images/heinz-bg.png"
@@ -153,7 +204,7 @@ export default function Home() {
 
       {/* Bottle */}
       <div
-        className="absolute top-[-250px] max-[400px]:top-[-240px] sm:top-[-360px] sm:bottom-[-7%] 
+        className="absolute top-[-250px] max-[400px]:top-[-200px] sm:top-[-360px] sm:bottom-[-7%] 
         left-1/2 -translate-x-[50%] 
         w-[620px] max-[400px]:w-[540px] sm:w-[600px] md:w-full md:max-w-[700px] lg:max-w-[700px] xl:max-w-[700px]
         h-[100vh] z-0"
@@ -169,7 +220,7 @@ export default function Home() {
       </div>
 
       {/* Headline */}
-      <div className="w-full max-w-[800px] z-1 pt-[2%] max-[400px]:pt-[10%] max-[767px]:pt-[20%] sm:mt-0 ">
+      <div className="w-full max-w-[800px] z-1 mt-[20%] sm:mt-0">
         <img
           src="/images/headline.png"
           alt="Headline"
@@ -206,11 +257,7 @@ export default function Home() {
 
         {text && (
           <div className="svgWrapper absolute flex justify-center top-[10%] sm:top-[3%] w-[700px] h-[520px] font-thai">
-            <svg
-              viewBox="0 0 700 520"
-              className="left-0 w-full h-full z-1 font-thai"
-              onClick={() => setText("")}
-            >
+            <svg viewBox="0 0 700 520" className="left-0 w-full h-full z-1 font-thai" onClick={() => setText("")}>
               <style>
                 {`
                   @font-face {
@@ -226,10 +273,7 @@ export default function Home() {
                 <path id="curve" d={d} fill="transparent" />
               </defs>
               <g id="mobile-shift">
-                <text
-                  className="font-thai font-bold fill-black"
-                  fontSize={isMobile ? "28" : "36"}
-                >
+                <text className="font-thai font-bold fill-black" fontSize={isMobile ? "28" : "36"}>
                   <textPath href="#curve" startOffset="50%" textAnchor="middle">
                     {text}
                   </textPath>
@@ -261,8 +305,9 @@ export default function Home() {
         </div>
 
         <div
-          className={`w-full max-w-[320px] ${isDownloading ? (isMobile ? "mt-[-40px]" : "mt-4") : "mt-4"
-            }`}
+          className={`w-full max-w-[320px] ${
+            isDownloading ? (isMobile ? "mt-[-40px]" : "mt-4") : "mt-4"
+          }`}
         >
           <img
             src="/images/hashtag.png"
@@ -274,6 +319,6 @@ export default function Home() {
           />
         </div>
       </div>
-    </BorderSafeWrapper>
+    </main>
   );
 }
